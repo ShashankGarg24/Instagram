@@ -73,4 +73,17 @@ public class UserRegistration {
     }
   }
 
+  @RequestMapping(method = RequestMethod.POST, path = "/usernameSuggestions")
+  public ResponseEntity<?> SuggestUsernames(@RequestParam("username") String username){
+    try{
+      if(!registration.usernameFound(username)){
+        return new ResponseEntity<>("unique username", HttpStatus.OK);
+      }
+      List<String> suggestions = registration.suggestions(username);
+      return new ResponseEntity<>(suggestions,HttpStatus.OK);
+    }
+    catch (Exception e){
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+    }
+  }
 }

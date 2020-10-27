@@ -10,6 +10,8 @@ import com.instagram.models.User;
 import com.instagram.repository.UserRepository;
 import com.instagram.serviceImpl.RegistrationImpl;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -125,6 +127,26 @@ public class Registration implements RegistrationImpl {
 
   }
 
+  public List<String> suggestions(String username){
+    List<String> suggestions = new ArrayList<>();
+    int count = 5;
+    String suggestion;
+    while(count > 0){
+      suggestion = username + generateRandomNumber(100, 1000);
+      if(usernameFound(suggestion)){
+        continue;
+      }
+      else{
+        suggestions.add(suggestion);
+        count--;
+      }
+    }
+    return suggestions;
+  }
+
+  public int generateRandomNumber(int lowerLimit, int upperLimit){
+    return (int)((Math.random() * (upperLimit - lowerLimit)) + lowerLimit);
+  }
   public boolean usernameFound(String username){
     return userRepository.findByUsername(username) != null;
   }
