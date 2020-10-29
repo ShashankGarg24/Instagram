@@ -22,4 +22,10 @@ public interface UserRepository extends CrudRepository<User, UUID> {
     @Query("UPDATE User u SET u.fullName = ?1 , u.username = ?2 , u.userBio = ?3 WHERE u.userId= ?4")
     void updateInitialDetails(String fullName, String username, String userBio, UUID userId);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.userPrivacy = ?1 WHERE u.username = ?2 ")
+    void updatePrivacy(String privacy, String username);
+
+
 }

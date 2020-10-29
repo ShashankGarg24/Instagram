@@ -7,6 +7,7 @@ import javax.persistence.Id;
 @Entity
 public class User {
 
+
   @Id
   private UUID userId;
   private String fullName;

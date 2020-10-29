@@ -1,5 +1,7 @@
 package com.instagram.Configuration;
 
+import com.instagram.filters.JwtRequestfilter;
+import com.instagram.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +25,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   private UserDetailsServiceImpl userDetailsService;
 
   @Autowired
-  private JwtRequestFilter jwtRequestFilter;
+ private JwtRequestfilter jwtRequestfilter;
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -37,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .anyRequest().permitAll()
         .and()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-    http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(jwtRequestfilter, UsernamePasswordAuthenticationFilter.class);
     http.headers().frameOptions().disable();
   }
 

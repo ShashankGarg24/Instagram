@@ -65,6 +65,10 @@ public class UserRegistration {
     try{
       return this.registration.userDetails(image, userId, fullName, username, userBio);
     }
+    catch (UsernameAlreadyExist usernameAlreadyExist){
+      List<String> suggestions = registration.suggestions(username);
+      return new ResponseEntity<>(suggestions,HttpStatus.OK);
+    }
     catch (PatternSyntaxException patternSyntaxException){
       return new ResponseEntity<>("invalid username", HttpStatus.BAD_REQUEST);
     }

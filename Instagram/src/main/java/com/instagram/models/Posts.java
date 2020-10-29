@@ -12,6 +12,7 @@ public class Posts {
   private Integer likes;
   private String date;
   private String location;
+  //comment activity
   //images
   //videos
   //user

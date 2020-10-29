@@ -16,10 +16,13 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import com.instagram.serviceImpl.UserServiceImpl;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +35,9 @@ public class Registration implements RegistrationImpl {
   @Autowired
   VerificationMail verificationMail;
 
+  @Autowired
+  UserServiceImpl userService;
+
   public ResponseEntity<?> registerUser(SignUp user)
       throws UserEmailAlreadyExist, PasswordException, EmptyField, ConfirmPasswordDoNotMatch {
 
@@ -40,7 +46,16 @@ public class Registration implements RegistrationImpl {
       throw new EmptyField();
     }
 
-    if(userEmailFound(user.getUserEmail())){
+    User user_sub = userRepository.findByUserEmail(user.getUserEmail());
+    if(userEmailFound(user.getUserEmail()) && !user_sub.isVerified()){
+        verificationMail.sendVerificationEmail(user_sub);
+        userService.updateUser(user_sub);
+        return new ResponseEntity<String>("email already exist but not verified. Please check EMAIL to verify.",
+                HttpStatus.NOT_ACCEPTABLE);
+
+    }
+
+    if(userEmailFound(user.getUserEmail()) && user_sub.isVerified()){
       throw new UserEmailAlreadyExist(user.getUserEmail());
     }
 
@@ -73,8 +88,9 @@ public class Registration implements RegistrationImpl {
       User newUser = new User();
 
       newUser.setUserId(UUID.randomUUID());
-      newUser.setUserPassword(user.getPassword());//set Bcrypt password
+      newUser.setUserPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
       newUser.setRole(user.getRole());
+      newUser.setUserPrivacy("PUBLIC");
       newUser.setEnabled(true);
       newUser.setVerified(false);
       newUser.setUserEmail(user.getUserEmail());
@@ -114,7 +130,7 @@ public class Registration implements RegistrationImpl {
 
     try{
       userRepository.updateInitialDetails(fullName, username, userBio, userId);
-      image.transferTo(new File("D:\\insta\\images\\" + username));
+      image.transferTo(new File("C:\\Users\\sg241\\IdeaProjects\\instaPFP\\" + username));
       User user = userRepository.findByUsername(username);
       return new ResponseEntity<>(user, HttpStatus.OK);
     }

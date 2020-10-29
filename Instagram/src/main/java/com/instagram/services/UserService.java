@@ -6,6 +6,8 @@ import com.instagram.serviceImpl.UserServiceImpl;
 import java.math.BigInteger;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,9 +24,28 @@ public class UserService implements UserServiceImpl {
     return userRepository.findByVerificationToken(userToken);
   }
 
+  public User findUserByUsername(String username){
+    return userRepository.findByUsername(username);
+  }
+
   public User findUserByUserId(UUID userId){
 
     return userRepository.findByUserId(userId);
+  }
+
+  public void updateUser(User user){
+    userRepository.save(user);
+  }
+
+  public ResponseEntity<?> updatePrivacy(String username, String privacy){
+    User user = findUserByUsername(username);
+    if(!user.getUserPrivacy().equals(privacy)){
+      userRepository.updatePrivacy(privacy, username);
+      return new ResponseEntity<>(username + " account set to " + privacy, HttpStatus.ACCEPTED);
+    }
+    else{
+      return new ResponseEntity<>(username + " account is already set to " + privacy, HttpStatus.OK);
+    }
   }
 
   public UUID convertToUUID(String userId){
