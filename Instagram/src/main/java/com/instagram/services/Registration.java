@@ -114,7 +114,7 @@ public class Registration implements RegistrationImpl {
 
     try{
       userRepository.updateInitialDetails(fullName, username, userBio, userId);
-      image.transferTo(new File("D:\\Instagram\\" + username));
+      image.transferTo(new File("D:\\insta\\images\\" + username));
       User user = userRepository.findByUsername(username);
       return new ResponseEntity<>(user, HttpStatus.OK);
     }
