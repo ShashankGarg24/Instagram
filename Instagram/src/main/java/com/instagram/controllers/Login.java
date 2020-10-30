@@ -7,6 +7,7 @@ import com.instagram.models.User;
 import com.instagram.serviceImpl.UserServiceImpl;
 import com.instagram.services.UserService;
 import com.instagram.services.VerificationMail;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -78,6 +83,19 @@ public class Login {
             return new ResponseEntity<String>("User is disabled by ADMIN.", HttpStatus.BAD_REQUEST);
         }
     }
+
+
+    @RequestMapping(value = "/refreshtoken", method = RequestMethod.GET)
+    public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
+
+        DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+        final String jwt = jwtTokenUtil.generateRefreshToken(claims);
+        User user = userService.findUserByUsername(jwtTokenUtil.getUsernameFromToken(jwt));
+        System.out.println("Token refreshed");
+        return new ResponseEntity<LoginResponse>(new LoginResponse(jwt, user), HttpStatus.OK);
+
+    }
+
 
     @GetMapping("/getUser/{username}")
     public ResponseEntity<?> getUser(@PathVariable String username){

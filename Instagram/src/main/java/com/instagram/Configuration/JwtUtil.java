@@ -1,12 +1,17 @@
 package com.instagram.Configuration;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.instagram.Exceptions.ExpiredJwtException;
+import io.jsonwebtoken.*;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import io.jsonwebtoken.impl.DefaultClaims;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class JwtUtil {
 
   private String SECRET_KEY = "secret";
-  private long JWT_EXPIRY = 30 * 60;//30 minutes
+  private long JWT_EXPIRY = 0;
   private long JWT_REFRESH_EXPIRY = 10 * 60 * 60;//10 hours
 
   public String getUsernameFromToken(String token) {
@@ -44,6 +49,14 @@ public class JwtUtil {
     return doGenerateToken(claims, userDetails.getUsername());
   }
 
+  public String generateRefreshToken(DefaultClaims claims) {
+    Map<String, Object> map = new HashMap<String, Object>();
+    for (Map.Entry<String, Object> entry : claims.entrySet()) {
+      map.put(entry.getKey(), entry.getValue());
+    }
+    return doGenerateRefreshToken(map, map.get("sub").toString());
+  }
+
   private String doGenerateToken(Map<String, Object> claims, String subject) {
 
     return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
@@ -58,9 +71,13 @@ public class JwtUtil {
         .signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
   }
 
-  public Boolean validateToken(String token, UserDetails userDetails) {
-    final String username = getUsernameFromToken(token);
-    return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+  public Boolean validateToken(String token, UserDetails userDetails) throws ExpiredJwtException {
+      String username = getUsernameFromToken(token);
+      if(isTokenExpired(token)){
+        throw new ExpiredJwtException(getAllClaimsFromToken(token), "Token Expired");
+      }
+      return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+
   }
 
 }
