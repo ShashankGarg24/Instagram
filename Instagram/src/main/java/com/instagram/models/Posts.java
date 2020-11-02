@@ -143,6 +143,10 @@ public class Posts {
     this.postMedias.add(postMedia);
   }
 
+  public void removePostMedias(PostMedia postMedia) {
+    this.postMedias.remove(postMedia);
+  }
+
   public List<Comment> getComments() {
     return comments;
   }

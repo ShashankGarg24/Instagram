@@ -57,6 +57,7 @@ public class UserRegistration {
       @RequestParam("username") String username, @RequestParam("fullName") String fullName,
       @RequestParam("bio") String userBio){
 
+    //for Backend only
     UUID userId = userService.convertToUUID(id);
     if(!userService.findUserByUserId(userId).isVerified()){
       return new ResponseEntity<>("Unverified user!", HttpStatus.BAD_REQUEST);

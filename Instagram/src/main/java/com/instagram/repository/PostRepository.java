@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface PostRepository extends CrudRepository<Posts, UUID> {
 
+    Posts findByPostId(UUID postId);
 }

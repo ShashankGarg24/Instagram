@@ -38,6 +38,9 @@ public class Registration implements RegistrationImpl {
   @Autowired
   UserServiceImpl userService;
 
+  @Autowired
+  FileUploadService fileUploadService;
+
   public ResponseEntity<?> registerUser(SignUp user)
       throws UserEmailAlreadyExist, PasswordException, EmptyField, ConfirmPasswordDoNotMatch {
 
@@ -130,7 +133,7 @@ public class Registration implements RegistrationImpl {
 
     try{
       userRepository.updateInitialDetails(fullName, username, userBio, userId);
-      image.transferTo(new File("C:\\Users\\sg241\\IdeaProjects\\instaPFP\\" + username));
+      fileUploadService.fileUpload(image, username, "instaPFP");
       User user = userRepository.findByUsername(username);
       return new ResponseEntity<>(user, HttpStatus.OK);
     }
