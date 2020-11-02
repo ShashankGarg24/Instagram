@@ -1,19 +1,32 @@
 package com.instagram.models;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 @Entity
 public class User {
 
 
   @Id
+  @Column(nullable = false, unique = true)
   private UUID userId;
   private String fullName;
+  @Column(unique = true)
   private String username;
+  @Column(nullable = false)
   private String userEmail;
+  @Column(nullable = false)
   private String userPassword;
+  @CreationTimestamp
+  private LocalDateTime userCreationTimeStamp;
   private String role;
   private String userBio;
   private String userPrivacy;
@@ -21,8 +34,25 @@ public class User {
   private boolean enabled;
   private boolean verified;
   //posts
+  @OneToMany(mappedBy = "postByUser")
+  private List<Posts> posts;
+
+  @OneToMany(mappedBy = "commentByUser")
+  private List<Comment> comments;
+
+  @OneToMany(mappedBy = "subCommentByUser")
+  private List<SubComment> subComments;
+
+
+
   //followers
   //followings
+
+
+
+  public User() {
+    this.userCreationTimeStamp = LocalDateTime.now();
+  }
 
 
   public UUID getUserId(UUID uuid) {
@@ -63,6 +93,14 @@ public class User {
 
   public void setUserPassword(String userPassword) {
     this.userPassword = userPassword;
+  }
+
+  public LocalDateTime getUserCreationTimeStamp() {
+    return userCreationTimeStamp;
+  }
+
+  public void setUserCreationTimeStamp(LocalDateTime userCreationTimeStamp) {
+    this.userCreationTimeStamp = userCreationTimeStamp;
   }
 
   public String getRole() {
@@ -111,5 +149,17 @@ public class User {
 
   public void setVerified(boolean verified) {
     this.verified = verified;
+  }
+
+  public List<Posts> getPosts() {
+    return posts;
+  }
+
+  public void addPost(Posts post) {
+    this.posts.add(post);
+  }
+
+  public void removePost(Posts post) {
+    this.posts.remove(post);
   }
 }
