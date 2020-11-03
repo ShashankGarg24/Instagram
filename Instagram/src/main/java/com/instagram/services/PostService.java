@@ -1,9 +1,9 @@
 package com.instagram.services;
 
 
-import com.instagram.models.PostMedia;
+import com.instagram.models.Media;
 import com.instagram.models.Posts;
-import com.instagram.repository.PostMediaRepo;
+import com.instagram.repository.MediaRepo;
 import com.instagram.repository.PostRepository;
 import com.instagram.serviceImpl.PostServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +29,17 @@ public class PostService implements PostServiceImpl {
     FileDeletingService fileDeletingService;
 
     @Autowired
-    PostMediaRepo postMediaRepo;
+    MediaRepo MediaRepo;
 
     public void uploadPost(String username, List<MultipartFile> media, String location, String caption, boolean commentActivity)throws Exception{
 
         Posts post = new Posts(location, caption, commentActivity);
         postRepository.save(post);
         for (MultipartFile m : media){
-            PostMedia postMedia = new PostMedia();
-            fileUploadService.fileUpload(m, postMedia.getMediaId().toString(), "instaPosts");
-            postMedia.set_post(post);
-            postMediaRepo.save(postMedia);
+            Media Media = new Media();
+            fileUploadService.fileUpload(m, Media.getMediaId().toString(), "instaPosts");
+            Media.set_post(post);
+            MediaRepo.save(Media);
         }
 
     }
@@ -47,10 +47,10 @@ public class PostService implements PostServiceImpl {
     @Transactional
     public void deletePost(UUID postId){
         Posts post = postRepository.findByPostId(postId);
-        List<PostMedia> postMedia = post.getPostMedias();
-        for (PostMedia p : postMedia) {
+        List<Media> Media = post.getMedia();
+        for (Media p : Media) {
             fileDeletingService.deleteFile(p.getMediaId().toString(), "instaPosts");
-            postMediaRepo.deleteById(p.getMediaId());
+            MediaRepo.deleteById(p.getMediaId());
         }
         postRepository.delete(post);
     }

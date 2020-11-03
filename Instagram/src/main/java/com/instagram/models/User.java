@@ -1,15 +1,13 @@
 package com.instagram.models;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 @Entity
 public class User {
@@ -33,7 +31,10 @@ public class User {
   private String verificationToken;
   private boolean enabled;
   private boolean verified;
-  //posts
+
+  @OneToOne(fetch = FetchType.LAZY,  cascade = CascadeType.ALL)
+  private Media profilePic;
+
   @OneToMany(mappedBy = "postByUser")
   private List<Posts> posts;
 
@@ -53,6 +54,7 @@ public class User {
   public User() {
     this.userCreationTimeStamp = LocalDateTime.now();
   }
+
 
 
   public UUID getUserId(UUID uuid) {
@@ -149,6 +151,14 @@ public class User {
 
   public void setVerified(boolean verified) {
     this.verified = verified;
+  }
+
+  public Media getProfilePic() {
+    return profilePic;
+  }
+
+  public void setProfilePic(Media profilePic) {
+    this.profilePic = profilePic;
   }
 
   public List<Posts> getPosts() {

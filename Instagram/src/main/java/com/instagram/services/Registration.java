@@ -5,18 +5,17 @@ import com.instagram.Exceptions.EmptyField;
 import com.instagram.Exceptions.PasswordException;
 import com.instagram.Exceptions.UserEmailAlreadyExist;
 import com.instagram.Exceptions.UsernameAlreadyExist;
+import com.instagram.models.Media;
 import com.instagram.models.SignUp;
 import com.instagram.models.User;
 import com.instagram.repository.UserRepository;
 import com.instagram.serviceImpl.RegistrationImpl;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import com.instagram.serviceImpl.UserServiceImpl;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,9 +131,17 @@ public class Registration implements RegistrationImpl {
     usernameValidator(username);
 
     try{
+
+      User user = userRepository.findByUserId(userId);
+
+      if(image != null){
+        Media media = new Media();
+        fileUploadService.fileUpload(image, media.getMediaId().toString(), "instaPFP");
+        user.setProfilePic(media);
+        userRepository.save(user);
+      }
       userRepository.updateInitialDetails(fullName, username, userBio, userId);
-      fileUploadService.fileUpload(image, username, "instaPFP");
-      User user = userRepository.findByUsername(username);
+
       return new ResponseEntity<>(user, HttpStatus.OK);
     }
     catch (PatternSyntaxException p){
@@ -145,6 +152,7 @@ public class Registration implements RegistrationImpl {
     }
 
   }
+
 
   public List<String> suggestions(String username){
     List<String> suggestions = new ArrayList<>();

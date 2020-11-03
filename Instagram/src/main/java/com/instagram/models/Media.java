@@ -1,21 +1,21 @@
 package com.instagram.models;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.util.UUID;
 
+
 @Entity
-public class PostMedia {
+public class Media {
 
     @Id
     @Column(nullable = false, unique = true)
     private UUID mediaId;
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "profilePic")
+    private User user;
     @ManyToOne
     private Posts _post;
 
-    public PostMedia() {
+    public Media() {
         this.mediaId = UUID.randomUUID();
     }
 
@@ -25,6 +25,14 @@ public class PostMedia {
 
     public void setMediaId(UUID mediaId) {
         this.mediaId = mediaId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Posts get_post() {

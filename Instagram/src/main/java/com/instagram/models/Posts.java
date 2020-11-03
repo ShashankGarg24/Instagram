@@ -26,7 +26,7 @@ public class Posts {
   private boolean commentActivity;
 
   @OneToMany(mappedBy = "_post")
-  private List<PostMedia> postMedias;
+  private List<Media> Media;
 
   @ManyToOne
   private User postByUser;
@@ -123,8 +123,9 @@ public class Posts {
     this.postLastUpdateTimeStamp = postLastUpdateTimeStamp;
   }
 
-  public void setPostMedias(List<PostMedia> postMedias) {
-    this.postMedias = postMedias;
+
+  public void setMedias(List<Media> Medias) {
+    this.Media = Medias;
   }
 
   public User getPostByUser() {
@@ -135,16 +136,16 @@ public class Posts {
     this.postByUser = postByUser;
   }
 
-  public List<PostMedia> getPostMedias() {
-    return postMedias;
+  public List<Media> getMedia() {
+    return Media;
   }
 
-  public void addPostMedias(PostMedia postMedia) {
-    this.postMedias.add(postMedia);
+  public void addMedias(Media Media) {
+    this.Media.add(Media);
   }
 
-  public void removePostMedias(PostMedia postMedia) {
-    this.postMedias.remove(postMedia);
+  public void removeMedias(Media Media) {
+    this.Media.remove(Media);
   }
 
   public List<Comment> getComments() {
