@@ -15,12 +15,14 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.PatternSyntaxException;
 import javax.management.BadAttributeValueExpException;
 import jdk.jfr.Registered;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +52,23 @@ public class UserRegistration {
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+  }
+
+  @RequestMapping(method = RequestMethod.POST, path = "/validateOTP/{id}")
+  public ResponseEntity<?> validateOtp(@PathVariable("id") String userId,@RequestParam("otp") String otpEntered) throws ExecutionException{
+    try {
+      UUID id = userService.convertToUUID(userId);
+      return registration.validateOtp(id, Integer.parseInt(otpEntered));
+    }
+    catch (Exception e){
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+    }
+  }
+
+  @RequestMapping(method = RequestMethod.POST, path = "/resendOTP/{id}")
+  public ResponseEntity<?> resendOtp(@PathVariable("id") String userId) throws ExecutionException{
+    UUID id = userService.convertToUUID(userId);
+    return registration.resendOtp(id);
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/details/{id}")

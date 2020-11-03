@@ -13,6 +13,7 @@ import com.instagram.serviceImpl.RegistrationImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -39,6 +40,9 @@ public class Registration implements RegistrationImpl {
 
   @Autowired
   FileUploadService fileUploadService;
+
+  @Autowired
+  OtpService otpService;
 
   public ResponseEntity<?> registerUser(SignUp user)
       throws UserEmailAlreadyExist, PasswordException, EmptyField, ConfirmPasswordDoNotMatch {
@@ -96,7 +100,6 @@ public class Registration implements RegistrationImpl {
       newUser.setEnabled(true);
       newUser.setVerified(false);
       newUser.setUserEmail(user.getUserEmail());
-      newUser.setVerificationToken(RandomString.make(64));
       verificationMail.sendVerificationEmail(newUser);
       userRepository.save(newUser);
 
@@ -109,6 +112,25 @@ public class Registration implements RegistrationImpl {
     catch (Exception e){
       return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
     }
+  }
+
+  public ResponseEntity<?> validateOtp(UUID userId, int otpEntered) throws ExecutionException {
+      int otp = otpService.getOtp(userId.toString());
+      if(otpEntered == otp){
+        userRepository.verifyUser(userId);
+        otpService.clearOtp(userId.toString());
+        return new ResponseEntity<>("Entered OTP is correct!", HttpStatus.ACCEPTED);
+      }
+      else{
+        return new ResponseEntity<>("Entered OTP is wrong!", HttpStatus.BAD_REQUEST);
+      }
+  }
+
+  public ResponseEntity<?> resendOtp(UUID userId) throws ExecutionException {
+
+    otpService.clearOtp(userId.toString());
+    verificationMail.sendVerificationEmail(userService.findUserByUserId(userId));
+    return new ResponseEntity<>("New OTP sent!", HttpStatus.OK);
   }
 
 

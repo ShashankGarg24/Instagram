@@ -10,19 +10,20 @@ public class VerificationMail {
 
   @Autowired
   MailService mailService;
+
+  @Autowired
+  OtpService otpService;
+
   public void sendVerificationEmail(User user){
 
-    String subject = "Please verify your registration.";
+    String subject = "OTP Verification";
     String senderName = "Instagram";
     String userEmail = user.getUserEmail();
     String mailContent = "<p>Dear User,  </p>";
 
     String site = "http://localhost:8080";
 
-    String verifyUrl = "/api/verify/" + user.getVerificationToken();
-    mailContent += "<p>Please click the link to verify your email</p>";
-    mailContent += "<a href='" + site + verifyUrl + "'>VERIFY</a><br>";
-
+    mailContent += "<p>Your OTP is: " + otpService.generateOtp(user.getUserId().toString()) + "</p>";
     mailService.sendMail(userEmail ,subject,senderName,mailContent);
   }
 }

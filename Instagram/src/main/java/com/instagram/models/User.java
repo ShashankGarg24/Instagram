@@ -57,7 +57,7 @@ public class User {
 
 
 
-  public UUID getUserId(UUID uuid) {
+  public UUID getUserId() {
     return userId;
   }
 

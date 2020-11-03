@@ -28,10 +28,11 @@ public interface UserRepository extends CrudRepository<User, UUID> {
     @Query("UPDATE User u SET u.userPrivacy = ?1 WHERE u.username = ?2 ")
     void updatePrivacy(String privacy, String username);
 
+
     @Transactional
     @Modifying
-    @Query("UPDATE User u SET u.profilePic = null WHERE u.userId = ?1 ")
-    void setProfilePicToNull(UUID userId);
+    @Query("UPDATE User u SET u.verified = true WHERE u.userId = ?1 ")
+    void verifyUser(UUID userId);
 
 
 }
