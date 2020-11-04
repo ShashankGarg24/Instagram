@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface RegistrationImpl {
 
   ResponseEntity<?> registerUser(SignUp user)
-      throws UserEmailAlreadyExist, PasswordException, ConfirmPasswordDoNotMatch, EmptyField;
+          throws UserEmailAlreadyExist, PasswordException, ConfirmPasswordDoNotMatch, EmptyField, ExecutionException;
 
   ResponseEntity<?> userDetails(MultipartFile image, UUID userId,  String fullName, String username, String userBio)
       throws EmptyField, UsernameAlreadyExist;

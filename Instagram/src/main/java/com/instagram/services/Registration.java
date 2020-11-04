@@ -45,7 +45,7 @@ public class Registration implements RegistrationImpl {
   OtpService otpService;
 
   public ResponseEntity<?> registerUser(SignUp user)
-      throws UserEmailAlreadyExist, PasswordException, EmptyField, ConfirmPasswordDoNotMatch {
+          throws UserEmailAlreadyExist, PasswordException, EmptyField, ConfirmPasswordDoNotMatch, ExecutionException {
 
 
     if(user.getUserEmail() == null){

@@ -1,15 +1,20 @@
 package com.instagram.services;
 
 import com.instagram.models.Media;
+import com.instagram.models.ResetDetails;
 import com.instagram.models.User;
 import com.instagram.repository.MediaRepo;
 import com.instagram.repository.UserRepository;
 import com.instagram.serviceImpl.UserServiceImpl;
 import java.math.BigInteger;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +32,12 @@ public class UserService implements UserServiceImpl {
 
   @Autowired
   FileDeletingService fileDeletingService;
+
+  @Autowired
+  MailService mailService;
+
+  @Autowired
+  OtpService otpService;
 
   public User findUserByEmail(String userEmail){
     return userRepository.findByUserEmail(userEmail);
@@ -87,6 +98,77 @@ public class UserService implements UserServiceImpl {
 
     return new ResponseEntity<>("Profile pic updated!", HttpStatus.OK);
   }
+
+  public ResponseEntity<?> resetPassword(ResetDetails userDetails){
+
+    try {
+      User user;
+      user = userRepository.findByUsername(userDetails.getUsername());
+
+      if (user == null) {
+        return new ResponseEntity<String>("Username doesn't exist", HttpStatus.NOT_FOUND);
+      }
+
+      BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+      boolean check = encoder.matches(userDetails.getOldPassword(), user.getUserPassword());
+
+      if (!check) {
+        return new ResponseEntity<String>("Old Password is incorrect!", HttpStatus.BAD_REQUEST);
+      }
+
+      String newPassword = userDetails.getNewPassword();
+      String confirmPassword = userDetails.getConfirmPassword();
+
+      if (!newPassword.equals(confirmPassword)) {
+        return new ResponseEntity<String>("Your new password and confirm password doesn't match!",
+                HttpStatus.BAD_REQUEST);
+      }
+
+      userRepository.updatePassword(user.getUserId(), BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+
+      String mailContent = "<p>Password updated successfully</p>";
+      mailService.sendMail(user.getUserEmail(), "Password updated", "Instagram", mailContent);
+      return new ResponseEntity<String>("Password updated", HttpStatus.OK);
+
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+    }
+  }
+
+  public ResponseEntity<?> forgotPassword(String userEmail){
+    try {
+      if(userRepository.findByUserEmail(userEmail) == null){
+        return new ResponseEntity<>("No account is registered by this email!", HttpStatus.NOT_FOUND);
+      }
+      otpService.clearOtp(userEmail);
+      String mailContent = "Your otp is: " + otpService.generateOtp(userEmail);
+      mailService.sendMail(userEmail, "OTP Verification", "Instagram", mailContent);
+      return new ResponseEntity<>("otp sent to email.", HttpStatus.OK);
+    } catch (ExecutionException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  public ResponseEntity<?> validateOtp(String userEmail, int otpEntered) throws ExecutionException {
+    int otp = otpService.getOtp(userEmail);
+    if(otpEntered == otp){
+      otpService.clearOtp(userEmail);
+      return new ResponseEntity<>("Entered OTP is correct!", HttpStatus.ACCEPTED);
+    }
+    else{
+      return new ResponseEntity<>("Entered OTP is wrong!", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  public ResponseEntity<?> resendOtp(String userEmail) throws ExecutionException {
+
+    otpService.clearOtp(userEmail);
+    String mailContent = "Your new otp is: " + otpService.generateOtp(userEmail);
+    mailService.sendMail(userEmail, "OTP Verification", "Instagram", mailContent);
+    return new ResponseEntity<>("new otp sent to email.", HttpStatus.OK);
+  }
+
+
 
   public UUID convertToUUID(String userId){
    return new UUID(

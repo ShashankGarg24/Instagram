@@ -54,7 +54,7 @@ public class UserRegistration {
     }
   }
 
-  @RequestMapping(method = RequestMethod.POST, path = "/validateOTP/{id}")
+  @RequestMapping(method = RequestMethod.POST, path = "/validateRegistrationOTP/{id}")
   public ResponseEntity<?> validateOtp(@PathVariable("id") String userId,@RequestParam("otp") String otpEntered) throws ExecutionException{
     try {
       UUID id = userService.convertToUUID(userId);

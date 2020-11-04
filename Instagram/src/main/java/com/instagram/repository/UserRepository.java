@@ -34,5 +34,11 @@ public interface UserRepository extends CrudRepository<User, UUID> {
     @Query("UPDATE User u SET u.verified = true WHERE u.userId = ?1 ")
     void verifyUser(UUID userId);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u set u.userPassword = ?2 where u.userId=?1")
+    void updatePassword(UUID id, String password);
+
+
 
 }
