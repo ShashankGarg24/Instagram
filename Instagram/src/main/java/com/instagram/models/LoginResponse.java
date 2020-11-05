@@ -2,19 +2,26 @@ package com.instagram.models;
 
 public class LoginResponse {
 
-    private final String jwt;
-    private User user;
+    private final String accessToken;
+    private final String refreshToken;
+    private UserProfile user;
 
-    public LoginResponse(String jwt,User user){
+
+    public LoginResponse(String accessToken, String refreshToken, UserProfile user) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
         this.user = user;
-        this.jwt = jwt;
     }
 
-    public String getJwt(){
-        return jwt;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public User getUser(){
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public UserProfile getUser(){
         return user;
     }
 }

@@ -1,6 +1,10 @@
 package com.instagram.services;
 
 import com.instagram.models.User;
+import com.instagram.models.UserCredentials;
+import com.instagram.models.UserProfile;
+import com.instagram.repository.ProfileRepository;
+import com.instagram.repository.UserCredentialsRepo;
 import com.instagram.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,23 +20,30 @@ import java.util.List;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    private UserRepository userRepository;
+    private ProfileRepository profileRepository;
+
+    @Autowired
+    UserCredentialsRepo userCredentialsRepo;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
 
+
+        UserProfile profile = profileRepository.findByUsername(username);
+
+        if(profile == null){
+            throw new UsernameNotFoundException("Could not find user");
+        }
+
+        UserCredentials user = userCredentialsRepo.findByProfilesProfileId(profile.getProfileId());
         String roles[] = user.getRole().split(",");
         List<SimpleGrantedAuthority> rolesL = new ArrayList<>();
         for(String r:roles){
             rolesL.add(new SimpleGrantedAuthority(r));
         }
 
-        if(user == null){
-            throw new UsernameNotFoundException("Could not find user");
-        }
 
-        return new org.springframework.security.core.userdetails.User(user.getUsername(),user.getUserPassword(),user.isVerified(),true,true,true,rolesL);
-
+        return new org.springframework.security.core.userdetails.User(profile.getUsername(), user.getUserPassword(),user.isVerified(),true,true,true,rolesL);
     }
+
 }

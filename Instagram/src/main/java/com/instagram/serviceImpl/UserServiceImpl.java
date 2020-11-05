@@ -2,17 +2,22 @@ package com.instagram.serviceImpl;
 
 import com.instagram.models.ResetDetails;
 import com.instagram.models.User;
+import com.instagram.models.UserCredentials;
+import com.instagram.models.UserProfile;
+import org.checkerframework.common.value.qual.StringVal;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public interface UserServiceImpl{
 
-  User findUserByEmail(String userEmail);
+  UserCredentials findUserByEmail(String userEmail);
 
-  User findUserByUsername(String username);
+  UserProfile findUserByUsername(String username);
 
   User findUserByToken(String userToken);
 
@@ -28,12 +33,10 @@ public interface UserServiceImpl{
 
   ResponseEntity<?> resetPassword(ResetDetails userDetails);
 
+  ResponseEntity<?> setNewPassword(String userEmail, String password);
+
   ResponseEntity<?> forgotPassword(String userEmail);
 
-  ResponseEntity<?> validateOtp(String userEmail, int otpEntered) throws ExecutionException;
-
-  ResponseEntity<?> resendOtp(String userEmail) throws ExecutionException;
-
-  void updateUser(User user);
+  void updateUser(UserCredentials user);
 
 }

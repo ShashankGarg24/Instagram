@@ -19,12 +19,12 @@ public interface RegistrationImpl {
   ResponseEntity<?> registerUser(SignUp user)
           throws UserEmailAlreadyExist, PasswordException, ConfirmPasswordDoNotMatch, EmptyField, ExecutionException;
 
-  ResponseEntity<?> userDetails(MultipartFile image, UUID userId,  String fullName, String username, String userBio)
+  ResponseEntity<?> userDetails(String userEmail, String fullName, String username)
       throws EmptyField, UsernameAlreadyExist;
 
-  ResponseEntity<?> validateOtp(UUID userId, int otpEntered) throws ExecutionException;
+  ResponseEntity<?> validateOtp(String userEmail, int otpEntered) throws ExecutionException;
 
-  ResponseEntity<?> resendOtp(UUID userId) throws ExecutionException;
+  ResponseEntity<?> resendOtp(String userEmail) throws ExecutionException;
 
   boolean usernameFound(String username);
   List<String> suggestions(String username);

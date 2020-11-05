@@ -2,16 +2,15 @@ package com.instagram.models;
 
 public class ResetDetails {
 
+
     private String username;
     private String oldPassword;
     private String newPassword;
-    private String confirmPassword;
 
-    public ResetDetails(String username, String oldPassword, String newPassword, String confirmPassword) {
+    public ResetDetails(String username, String oldPassword, String newPassword) {
         this.username = username;
         this.oldPassword = oldPassword;
         this.newPassword = newPassword;
-        this.confirmPassword = confirmPassword;
     }
 
     public String getUsername() {
@@ -38,11 +37,4 @@ public class ResetDetails {
         this.newPassword = newPassword;
     }
 
-    public String getConfirmPassword() {
-        return confirmPassword;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
-    }
 }

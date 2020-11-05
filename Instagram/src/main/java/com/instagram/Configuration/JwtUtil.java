@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 public class JwtUtil {
 
   private String SECRET_KEY = "secret";
-  private long JWT_EXPIRY = 0;
-  private long JWT_REFRESH_EXPIRY = 10 * 60 * 60;//10 hours
+  private long JWT_EXPIRY = 10 * 60; //10 minutes
+  private long JWT_REFRESH_EXPIRY = 7 * 24 * 60 * 60;//10 hours
 
   public String getUsernameFromToken(String token) {
     return getClaimFromToken(token, Claims::getSubject);
@@ -49,12 +49,18 @@ public class JwtUtil {
     return doGenerateToken(claims, userDetails.getUsername());
   }
 
-  public String generateRefreshToken(DefaultClaims claims) {
+ /* public String generateRefreshToken(DefaultClaims claims) {
     Map<String, Object> map = new HashMap<String, Object>();
     for (Map.Entry<String, Object> entry : claims.entrySet()) {
       map.put(entry.getKey(), entry.getValue());
     }
     return doGenerateRefreshToken(map, map.get("sub").toString());
+  }
+  */
+
+  public String generateRefreshToken(UserDetails userDetails) {
+    Map<String, Object> claims = new HashMap<>();
+    return doGenerateRefreshToken(claims, userDetails.getUsername());
   }
 
   private String doGenerateToken(Map<String, Object> claims, String subject) {

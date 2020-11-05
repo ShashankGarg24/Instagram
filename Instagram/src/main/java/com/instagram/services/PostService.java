@@ -38,7 +38,7 @@ public class PostService implements PostServiceImpl {
         for (MultipartFile m : media){
             Media Media = new Media();
             fileUploadService.fileUpload(m, Media.getMediaId().toString(), "instaPosts");
-            Media.set_post(post);
+            Media.setMediaPost(post);
             MediaRepo.save(Media);
         }
 

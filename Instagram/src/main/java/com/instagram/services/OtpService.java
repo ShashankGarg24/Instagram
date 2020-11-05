@@ -27,7 +27,7 @@ public class OtpService {
 
     public int generateOtp(String key){
 
-        int otp = (int)(10000 + (Math.random() * 90000));
+        int otp = (int)(1000 + (Math.random() * 9000));
         otpCache.put(key, otp);
         return otp;
     }

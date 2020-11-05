@@ -20,6 +20,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.management.BadAttributeValueExpException;
 import jdk.jfr.Registered;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.HttpCodeStatusMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
@@ -44,8 +45,7 @@ public class UserRegistration {
   @RequestMapping(method = RequestMethod.POST, path = "/registration")
   public ResponseEntity<?> userRegistration(@RequestBody Map<String, String> user) {
     try {
-      SignUp signUp = new SignUp(user.get("userEmail"), user.get("password"),
-          user.get("confirmPassword"), user.get("role"));
+      SignUp signUp = new SignUp(user.get("userEmail"), user.get("password"), user.get("role"));
       return this.registration.registerUser(signUp);
     } catch (PatternSyntaxException p) {
       return new ResponseEntity<>("invalid email address", HttpStatus.BAD_REQUEST);
@@ -54,40 +54,39 @@ public class UserRegistration {
     }
   }
 
-  @RequestMapping(method = RequestMethod.POST, path = "/validateRegistrationOTP/{id}")
-  public ResponseEntity<?> validateOtp(@PathVariable("id") String userId,@RequestParam("otp") String otpEntered) throws ExecutionException{
+  @RequestMapping(method = RequestMethod.POST, path = "/validateOTP")
+  public ResponseEntity<?> validateOtp(@RequestBody Map<String, String> body) throws ExecutionException{
     try {
-      UUID id = userService.convertToUUID(userId);
-      return registration.validateOtp(id, Integer.parseInt(otpEntered));
+      return registration.validateOtp(body.get("email"), Integer.parseInt(body.get("otp")));
     }
     catch (Exception e){
       return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
     }
   }
 
-  @RequestMapping(method = RequestMethod.POST, path = "/resendOTP/{id}")
-  public ResponseEntity<?> resendOtp(@PathVariable("id") String userId) throws ExecutionException{
-    UUID id = userService.convertToUUID(userId);
-    return registration.resendOtp(id);
+  @RequestMapping(method = RequestMethod.POST, path = "/resendOTP/{email}")
+  public ResponseEntity<?> resendOtp(@PathVariable("email") String userEmail) throws ExecutionException{
+    return registration.resendOtp(userEmail);
   }
 
-  @RequestMapping(method = RequestMethod.POST, path = "/details/{id}")
-  public ResponseEntity<?> userProfileDetails(@PathVariable("id") String id, @RequestParam("image") MultipartFile image,
-      @RequestParam("username") String username, @RequestParam("fullName") String fullName,
-      @RequestParam("bio") String userBio){
+  @RequestMapping(method = RequestMethod.POST, path = "/details")
+  public ResponseEntity<?> userProfileDetails(@RequestBody Map<String, String> details){
 
-    //for Backend only
-    UUID userId = userService.convertToUUID(id);
-    if(!userService.findUserByUserId(userId).isVerified()){
+    System.out.println(details.get("email"));
+    System.out.println(details.get("name"));
+    System.out.println(details.get("username"));
+
+
+    if(!userService.findUserByEmail(details.get("email")).isVerified()){
       return new ResponseEntity<>("Unverified user!", HttpStatus.BAD_REQUEST);
     }
 
     try{
-      return this.registration.userDetails(image, userId, fullName, username, userBio);
+      return this.registration.userDetails(details.get("email"), details.get("name"), details.get("username"));
     }
     catch (UsernameAlreadyExist usernameAlreadyExist){
-      List<String> suggestions = registration.suggestions(username);
-      return new ResponseEntity<>(suggestions,HttpStatus.OK);
+      List<String> suggestions = registration.suggestions(details.get("username"));
+      return new ResponseEntity<>(suggestions, HttpStatus.ACCEPTED);
     }
     catch (PatternSyntaxException patternSyntaxException){
       return new ResponseEntity<>("invalid username", HttpStatus.BAD_REQUEST);

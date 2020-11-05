@@ -20,8 +20,8 @@ public interface UserRepository extends CrudRepository<User, UUID> {
 
     @Transactional
     @Modifying
-    @Query("UPDATE User u SET u.fullName = ?1 , u.username = ?2 , u.userBio = ?3 WHERE u.userId= ?4")
-    void updateInitialDetails(String fullName, String username, String userBio, UUID userId);
+    @Query("UPDATE User u SET u.fullName = ?1 , u.username = ?2  WHERE u.userEmail= ?3")
+    void updateInitialDetails(String fullName, String username, String userEmail);
 
     @Transactional
     @Modifying
@@ -31,8 +31,8 @@ public interface UserRepository extends CrudRepository<User, UUID> {
 
     @Transactional
     @Modifying
-    @Query("UPDATE User u SET u.verified = true WHERE u.userId = ?1 ")
-    void verifyUser(UUID userId);
+    @Query("UPDATE User u SET u.verified = true WHERE u.userEmail = ?1 ")
+    void verifyUser(String userEmail);
 
     @Transactional
     @Modifying

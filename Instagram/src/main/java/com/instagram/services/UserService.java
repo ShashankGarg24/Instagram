@@ -1,12 +1,14 @@
 package com.instagram.services;
 
-import com.instagram.models.Media;
-import com.instagram.models.ResetDetails;
-import com.instagram.models.User;
+import com.instagram.controllers.Login;
+import com.instagram.models.*;
 import com.instagram.repository.MediaRepo;
+import com.instagram.repository.ProfileRepository;
+import com.instagram.repository.UserCredentialsRepo;
 import com.instagram.repository.UserRepository;
 import com.instagram.serviceImpl.UserServiceImpl;
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -23,6 +26,11 @@ public class UserService implements UserServiceImpl {
 
   @Autowired
   UserRepository userRepository;
+  @Autowired
+  UserCredentialsRepo userCredentialsRepo;
+
+  @Autowired
+  ProfileRepository profileRepository;
 
   @Autowired
   MediaRepo mediaRepo;
@@ -39,16 +47,16 @@ public class UserService implements UserServiceImpl {
   @Autowired
   OtpService otpService;
 
-  public User findUserByEmail(String userEmail){
-    return userRepository.findByUserEmail(userEmail);
+  public UserCredentials findUserByEmail(String userEmail){
+    return userCredentialsRepo.findByUserEmail(userEmail);
   }
 
   public User findUserByToken(String userToken){
     return userRepository.findByVerificationToken(userToken);
   }
 
-  public User findUserByUsername(String username){
-    return userRepository.findByUsername(username);
+  public UserProfile findUserByUsername(String username){
+    return profileRepository.findByUsername(username);
   }
 
   public User findUserByUserId(UUID userId){
@@ -56,12 +64,12 @@ public class UserService implements UserServiceImpl {
     return userRepository.findByUserId(userId);
   }
 
-  public void updateUser(User user){
-    userRepository.save(user);
+  public void updateUser(UserCredentials user){
+    userCredentialsRepo.save(user);
   }
 
   public ResponseEntity<?> updatePrivacy(String username, String privacy){
-    User user = findUserByUsername(username);
+    UserProfile user = findUserByUsername(username);
     if(!user.getUserPrivacy().equals(privacy)){
       userRepository.updatePrivacy(privacy, username);
       return new ResponseEntity<>(username + " account set to " + privacy, HttpStatus.ACCEPTED);
@@ -117,12 +125,6 @@ public class UserService implements UserServiceImpl {
       }
 
       String newPassword = userDetails.getNewPassword();
-      String confirmPassword = userDetails.getConfirmPassword();
-
-      if (!newPassword.equals(confirmPassword)) {
-        return new ResponseEntity<String>("Your new password and confirm password doesn't match!",
-                HttpStatus.BAD_REQUEST);
-      }
 
       userRepository.updatePassword(user.getUserId(), BCrypt.hashpw(newPassword, BCrypt.gensalt()));
 
@@ -135,40 +137,47 @@ public class UserService implements UserServiceImpl {
     }
   }
 
-  public ResponseEntity<?> forgotPassword(String userEmail){
+  public ResponseEntity<?> forgotPassword(String userDetail){
     try {
-      if(userRepository.findByUserEmail(userEmail) == null){
-        return new ResponseEntity<>("No account is registered by this email!", HttpStatus.NOT_FOUND);
+
+      UserCredentials user;
+
+      if(userDetail.contains("@")){
+        user = findUserByEmail(userDetail);
       }
-      otpService.clearOtp(userEmail);
-      String mailContent = "Your otp is: " + otpService.generateOtp(userEmail);
-      mailService.sendMail(userEmail, "OTP Verification", "Instagram", mailContent);
-      return new ResponseEntity<>("otp sent to email.", HttpStatus.OK);
+      else {
+        user = userCredentialsRepo.findByProfilesProfileId(findUserByUsername(userDetail).getProfileId());
+      }
+
+      if(user == null){
+        return new ResponseEntity<>("No account is registered by this email/username!", HttpStatus.NOT_FOUND);
+      }
+
+      otpService.clearOtp(user.getUserEmail());
+      int otp = otpService.generateOtp(user.getUserEmail());
+      System.out.println(otp);
+      String mailContent = "Your otp is: " + otp;
+      mailService.sendMail(user.getUserEmail(), "OTP Verification", "Instagram", mailContent);
+      return new ResponseEntity<>(new Response(user.getUserEmail()), HttpStatus.OK);
     } catch (ExecutionException e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
 
-  public ResponseEntity<?> validateOtp(String userEmail, int otpEntered) throws ExecutionException {
-    int otp = otpService.getOtp(userEmail);
-    if(otpEntered == otp){
-      otpService.clearOtp(userEmail);
-      return new ResponseEntity<>("Entered OTP is correct!", HttpStatus.ACCEPTED);
+  public ResponseEntity<?> setNewPassword(String userEmail, String password){
+    UserCredentials user = findUserByEmail(userEmail);
+    if(user == null){
+      return new ResponseEntity<>("No such Account found!", HttpStatus.valueOf(404));
     }
-    else{
-      return new ResponseEntity<>("Entered OTP is wrong!", HttpStatus.BAD_REQUEST);
+    user.setUserPassword(new BCryptPasswordEncoder().encode(password));
+    userCredentialsRepo.save(user);
+    Login login = new Login();
+    login.newPassword(userEmail, password);
+    if(user.getProfiles() == null){
+      return new ResponseEntity<>("Password changed. no profile is available", HttpStatus.valueOf(300));
     }
+  return new ResponseEntity<>(user.getProfiles(), HttpStatus.ACCEPTED);
   }
-
-  public ResponseEntity<?> resendOtp(String userEmail) throws ExecutionException {
-
-    otpService.clearOtp(userEmail);
-    String mailContent = "Your new otp is: " + otpService.generateOtp(userEmail);
-    mailService.sendMail(userEmail, "OTP Verification", "Instagram", mailContent);
-    return new ResponseEntity<>("new otp sent to email.", HttpStatus.OK);
-  }
-
-
 
   public UUID convertToUUID(String userId){
    return new UUID(

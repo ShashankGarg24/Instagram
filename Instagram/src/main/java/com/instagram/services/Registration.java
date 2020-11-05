@@ -5,9 +5,9 @@ import com.instagram.Exceptions.EmptyField;
 import com.instagram.Exceptions.PasswordException;
 import com.instagram.Exceptions.UserEmailAlreadyExist;
 import com.instagram.Exceptions.UsernameAlreadyExist;
-import com.instagram.models.Media;
-import com.instagram.models.SignUp;
-import com.instagram.models.User;
+import com.instagram.models.*;
+import com.instagram.repository.ProfileRepository;
+import com.instagram.repository.UserCredentialsRepo;
 import com.instagram.repository.UserRepository;
 import com.instagram.serviceImpl.RegistrationImpl;
 import java.util.ArrayList;
@@ -31,6 +31,11 @@ public class Registration implements RegistrationImpl {
 
   @Autowired
   UserRepository userRepository;
+  @Autowired
+  UserCredentialsRepo userCredentialsRepo;
+
+  @Autowired
+  ProfileRepository profileRepository;
 
   @Autowired
   VerificationMail verificationMail;
@@ -45,14 +50,14 @@ public class Registration implements RegistrationImpl {
   OtpService otpService;
 
   public ResponseEntity<?> registerUser(SignUp user)
-          throws UserEmailAlreadyExist, PasswordException, EmptyField, ConfirmPasswordDoNotMatch, ExecutionException {
+          throws UserEmailAlreadyExist, PasswordException, EmptyField, ExecutionException {
 
 
     if(user.getUserEmail() == null){
       throw new EmptyField();
     }
 
-    User user_sub = userRepository.findByUserEmail(user.getUserEmail());
+    UserCredentials user_sub = userCredentialsRepo.findByUserEmail(user.getUserEmail());
     if(userEmailFound(user.getUserEmail()) && !user_sub.isVerified()){
         verificationMail.sendVerificationEmail(user_sub);
         userService.updateUser(user_sub);
@@ -60,6 +65,7 @@ public class Registration implements RegistrationImpl {
                 HttpStatus.NOT_ACCEPTABLE);
 
     }
+
 
     if(userEmailFound(user.getUserEmail()) && user_sub.isVerified()){
       throw new UserEmailAlreadyExist(user.getUserEmail());
@@ -72,16 +78,8 @@ public class Registration implements RegistrationImpl {
       throw new EmptyField();
     }
 
-    if(user.getPassword().length() < 6) {
+    if(user.getPassword().length() < 4) {
       throw new PasswordException();
-    }
-
-    if(user.getConfirmPassword() == null){
-      throw new EmptyField();
-    }
-
-    if(!user.getPassword().equals(user.getConfirmPassword())){
-      throw new ConfirmPasswordDoNotMatch();
     }
 
 
@@ -91,19 +89,12 @@ public class Registration implements RegistrationImpl {
 
     try{
 
-      User newUser = new User();
 
-      newUser.setUserId(UUID.randomUUID());
-      newUser.setUserPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
-      newUser.setRole(user.getRole());
-      newUser.setUserPrivacy("PUBLIC");
-      newUser.setEnabled(true);
-      newUser.setVerified(false);
-      newUser.setUserEmail(user.getUserEmail());
+      UserCredentials newUser = new UserCredentials(user.getUserEmail(), new BCryptPasswordEncoder().encode(user.getPassword()), user.getRole(), false);
       verificationMail.sendVerificationEmail(newUser);
-      userRepository.save(newUser);
+      userCredentialsRepo.save(newUser);
 
-      return new ResponseEntity<>(newUser,HttpStatus.OK);
+      return new ResponseEntity<>(newUser.isVerified(),HttpStatus.OK);//Change response
 
     }
     catch (PatternSyntaxException p){
@@ -114,11 +105,11 @@ public class Registration implements RegistrationImpl {
     }
   }
 
-  public ResponseEntity<?> validateOtp(UUID userId, int otpEntered) throws ExecutionException {
-      int otp = otpService.getOtp(userId.toString());
+  public ResponseEntity<?> validateOtp(String userEmail, int otpEntered) throws ExecutionException {
+      int otp = otpService.getOtp(userEmail);
       if(otpEntered == otp){
-        userRepository.verifyUser(userId);
-        otpService.clearOtp(userId.toString());
+        userCredentialsRepo.verifyUser(userEmail);
+        otpService.clearOtp(userEmail);
         return new ResponseEntity<>("Entered OTP is correct!", HttpStatus.ACCEPTED);
       }
       else{
@@ -126,15 +117,20 @@ public class Registration implements RegistrationImpl {
       }
   }
 
-  public ResponseEntity<?> resendOtp(UUID userId) throws ExecutionException {
+  public ResponseEntity<?> resendOtp(String userEmail) throws ExecutionException {
 
-    otpService.clearOtp(userId.toString());
-    verificationMail.sendVerificationEmail(userService.findUserByUserId(userId));
-    return new ResponseEntity<>("New OTP sent!", HttpStatus.OK);
+      if(userCredentialsRepo.findByUserEmail(userEmail) == null){
+      return new ResponseEntity<>("Email not registered!", HttpStatus.NOT_FOUND);
+    }
+
+      otpService.clearOtp(userEmail);
+      verificationMail.sendVerificationEmail(userService.findUserByEmail(userEmail));
+      return new ResponseEntity<>("New OTP sent!", HttpStatus.OK);
+
   }
 
 
-  public ResponseEntity<?> userDetails(MultipartFile image, UUID userId, String fullName, String username, String userBio)
+  public ResponseEntity<?> userDetails(String userEmail, String fullName, String username)
       throws EmptyField, UsernameAlreadyExist {
 
 
@@ -154,17 +150,22 @@ public class Registration implements RegistrationImpl {
 
     try{
 
-      User user = userRepository.findByUserId(userId);
+      UserCredentials user = userCredentialsRepo.findByUserEmail(userEmail);
 
-      if(image != null){
+    /*  if(image != null){
         Media media = new Media();
         fileUploadService.fileUpload(image, media.getMediaId().toString(), "instaPFP");
         user.setProfilePic(media);
         userRepository.save(user);
       }
-      userRepository.updateInitialDetails(fullName, username, userBio, userId);
+      */
 
-      return new ResponseEntity<>(user, HttpStatus.OK);
+      UserProfile profile = new UserProfile(username, fullName, "PUBLIC", true);
+      user.setProfiles(profile);
+      profileRepository.save(profile);
+      userCredentialsRepo.save(user);
+
+      return new ResponseEntity<>(profile, HttpStatus.OK);
     }
     catch (PatternSyntaxException p){
       return new ResponseEntity<>("invalid username", HttpStatus.BAD_REQUEST);
@@ -197,11 +198,11 @@ public class Registration implements RegistrationImpl {
     return (int)((Math.random() * (upperLimit - lowerLimit)) + lowerLimit);
   }
   public boolean usernameFound(String username){
-    return userRepository.findByUsername(username) != null;
+    return profileRepository.findByUsername(username) != null;
   }
 
   public boolean userEmailFound(String userEmail){
-    return userRepository.findByUserEmail(userEmail) != null;
+    return userCredentialsRepo.findByUserEmail(userEmail) != null;
   }
 
   public void emailValidator(String userEmail) {
@@ -215,7 +216,7 @@ public class Registration implements RegistrationImpl {
   }
 
     public void usernameValidator(String username){
-      String username_regex = "^[a-z0-9._]{5,}$";
+      String username_regex = "^[a-z0-9._]{3,}$";
       Pattern pattern1 = Pattern.compile(username_regex);
       Matcher matcher1 = pattern1.matcher(username);
 

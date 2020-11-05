@@ -13,7 +13,7 @@ public class Media {
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "profilePic")
     private User user;
     @ManyToOne
-    private Posts _post;
+    private Posts mediaPost;
 
     public Media() {
         this.mediaId = UUID.randomUUID();
@@ -35,11 +35,11 @@ public class Media {
         this.user = user;
     }
 
-    public Posts get_post() {
-        return _post;
+    public Posts getMediaPost() {
+        return mediaPost;
     }
 
-    public void set_post(Posts _post) {
-        this._post = _post;
+    public void setMediaPost(Posts mediaPost) {
+        this.mediaPost = mediaPost;
     }
 }

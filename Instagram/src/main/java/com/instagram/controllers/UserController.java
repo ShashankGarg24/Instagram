@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -35,25 +36,14 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/forgotPassword")
-    public ResponseEntity<?> forgotPassword(@RequestParam("email") String userEmail){
-        return userService.forgotPassword(userEmail);
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> userDetail){
+        return userService.forgotPassword(userDetail.get("detail"));
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/validateOtp/{userEmail}")
-    public ResponseEntity<?> validateOtp(@PathVariable("userEmail") String userEmail,@RequestParam("otp") String otpEntered) throws ExecutionException{
-        try {
-            return userService.validateOtp(userEmail, Integer.parseInt(otpEntered));
-        }
-        catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
-        }
+    @RequestMapping(method = RequestMethod.POST, path = "/setNewPassword")
+    public ResponseEntity<?> setNewPassword(@RequestBody Map<String, String> response){
+        return userService.setNewPassword(response.get("email"), response.get("password"));
     }
-
-    @RequestMapping(method = RequestMethod.POST, path = "/resendOtp")
-    public ResponseEntity<?> resendOtp(@RequestParam("email") String userEmail) throws ExecutionException {
-        return userService.resendOtp(userEmail);
-    }
-
 
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/deleteProfilePic/{userId}")
