@@ -1,11 +1,12 @@
 package com.instagram.models;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Fetch;
 
 import javax.persistence.*;
-import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,10 +22,14 @@ public class UserProfile {
     private boolean enabled;
     @CreationTimestamp
     private LocalDateTime profileCreationTimeStamp;
+    private String profilePicPath;
+    private String birthDate;
+    private int postNumber = 0;
+    private int followersCount = 0;
+    private int followingCount = 0;
 
-
-    @OneToOne(fetch = FetchType.LAZY,  cascade = CascadeType.ALL)
-    private Media profilePic;
+    @OneToMany
+    private List<Media> postMedia;
 
     @OneToMany(mappedBy = "postByUser")
     private List<Posts> posts;
@@ -56,6 +61,30 @@ public class UserProfile {
 
     public void setProfileId(UUID profileId) {
         this.profileId = profileId;
+    }
+
+    public int getPostNumber() {
+        return postNumber;
+    }
+
+    public void setPostNumber() {
+        ++this.postNumber;
+    }
+
+    public int getFollowersCount() {
+        return followersCount;
+    }
+
+    public void setFollowersCount() {
+        ++this.followersCount;
+    }
+
+    public int getFollowingCount() {
+        return followingCount;
+    }
+
+    public void setFollowingCount() {
+        ++this.followingCount;
     }
 
     public String getUsername() {
@@ -106,12 +135,29 @@ public class UserProfile {
         this.profileCreationTimeStamp = profileCreationTimeStamp;
     }
 
-    public Media getProfilePic() {
-        return profilePic;
+    public String getProfilePicPath() {
+        return profilePicPath;
     }
 
-    public void setProfilePic(Media profilePic) {
-        this.profilePic = profilePic;
+    public void setProfilePicPath(String profilePicPath) {
+        this.profilePicPath = profilePicPath;
+    }
+
+    private static String parseDate(String date) {
+        try {
+            Date d = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            return new SimpleDateFormat("yyyy-MM-dd").format(d).substring(0, 10);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    public String getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(String birthDate) {
+        this.birthDate = parseDate(birthDate);
     }
 
     public List<Posts> getPosts() {

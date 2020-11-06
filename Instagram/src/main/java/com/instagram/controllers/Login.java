@@ -142,8 +142,8 @@ public class Login {
                     .loadUserByUsername(profile.getUsername());
 
             if (userDetails.isEnabled()) {
-                final String accessToken = jwtTokenUtil.generateToken(userDetails);
-                final String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails);
+                final String accessToken = jwtTokenUtil.generateToken(userDetails.getUsername());
+                final String refreshToken = jwtTokenUtil.generateRefreshToken(userDetails.getUsername());
                 return new ResponseEntity<LoginResponse>(new LoginResponse(accessToken, refreshToken, profile), HttpStatus.OK);
             } else {
                 return new ResponseEntity<String>("User is disabled by ADMIN.", HttpStatus.BAD_REQUEST);

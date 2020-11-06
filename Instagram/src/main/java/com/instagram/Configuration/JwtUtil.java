@@ -20,7 +20,7 @@ public class JwtUtil {
 
   private String SECRET_KEY = "secret";
   private long JWT_EXPIRY = 10 * 60; //10 minutes
-  private long JWT_REFRESH_EXPIRY = 7 * 24 * 60 * 60;//10 hours
+  private long JWT_REFRESH_EXPIRY = 7 * 24 * 60 * 60;//7 days
 
   public String getUsernameFromToken(String token) {
     return getClaimFromToken(token, Claims::getSubject);
@@ -44,9 +44,9 @@ public class JwtUtil {
     return expiration.before(new Date());
   }
 
-  public String generateToken(UserDetails userDetails) {
+  public String generateToken(String username) {
     Map<String, Object> claims = new HashMap<>();
-    return doGenerateToken(claims, userDetails.getUsername());
+    return doGenerateToken(claims, username);
   }
 
  /* public String generateRefreshToken(DefaultClaims claims) {
@@ -58,9 +58,9 @@ public class JwtUtil {
   }
   */
 
-  public String generateRefreshToken(UserDetails userDetails) {
+  public String generateRefreshToken(String username) {
     Map<String, Object> claims = new HashMap<>();
-    return doGenerateRefreshToken(claims, userDetails.getUsername());
+    return doGenerateRefreshToken(claims, username);
   }
 
   private String doGenerateToken(Map<String, Object> claims, String subject) {

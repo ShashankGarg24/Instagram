@@ -25,7 +25,7 @@ public class Posts {
   private String caption;
   private boolean commentActivity;
 
-  @OneToMany(mappedBy = "mediaPost")
+  @OneToMany
   private List<Media> Media;
 
   @ManyToOne

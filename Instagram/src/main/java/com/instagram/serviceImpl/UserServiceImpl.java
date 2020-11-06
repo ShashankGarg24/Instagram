@@ -13,30 +13,32 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public interface UserServiceImpl{
+public interface UserServiceImpl {
 
-  UserCredentials findUserByEmail(String userEmail);
+    UserCredentials findUserByEmail(String userEmail);
 
-  UserProfile findUserByUsername(String username);
+    UserProfile findUserByUsername(String username);
 
-  User findUserByToken(String userToken);
+    User findUserByToken(String userToken);
 
-  User findUserByUserId(UUID userId);
+    User findUserByUserId(UUID userId);
 
-  UUID convertToUUID(String userId);
+    UUID convertToUUID(String userId);
 
-  ResponseEntity<?> updatePrivacy(String username, String privacy);
+    ResponseEntity<?> updatePrivacy(String username, String privacy);
 
-  ResponseEntity<?> deleteProfilePic(UUID userId);
+    ResponseEntity<?> deleteProfilePic(String token);
 
-  ResponseEntity<?> updateProfilePic(MultipartFile image, UUID id) throws Exception;
+    ResponseEntity<?> updateProfile(String token, String name, String username, String userBio, String birthDate, String profilePrivacy) throws Exception;
 
-  ResponseEntity<?> resetPassword(ResetDetails userDetails);
+    ResponseEntity<?> updateProfilePic(String token, MultipartFile image) throws Exception;
 
-  ResponseEntity<?> setNewPassword(String userEmail, String password);
+    ResponseEntity<?> resetPassword(ResetDetails userDetails);
 
-  ResponseEntity<?> forgotPassword(String userEmail);
+    ResponseEntity<?> setNewPassword(String userEmail, String password);
 
-  void updateUser(UserCredentials user);
+    ResponseEntity<?> forgotPassword(String userEmail);
+
+    void updateUser(UserCredentials user);
 
 }

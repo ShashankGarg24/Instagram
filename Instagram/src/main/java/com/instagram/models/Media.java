@@ -10,13 +10,10 @@ public class Media {
     @Id
     @Column(nullable = false, unique = true)
     private UUID mediaId;
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "profilePic")
-    private User user;
-    @ManyToOne
-    private Posts mediaPost;
+    private String mediaPath;
+    private boolean pinned;
 
     public Media() {
-        this.mediaId = UUID.randomUUID();
     }
 
     public UUID getMediaId() {
@@ -27,19 +24,19 @@ public class Media {
         this.mediaId = mediaId;
     }
 
-    public User getUser() {
-        return user;
+    public String getMediaPath() {
+        return mediaPath;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setMediaPath(String mediaPath) {
+        this.mediaPath = mediaPath;
     }
 
-    public Posts getMediaPost() {
-        return mediaPost;
+    public boolean isPinned() {
+        return pinned;
     }
 
-    public void setMediaPost(Posts mediaPost) {
-        this.mediaPost = mediaPost;
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
     }
 }

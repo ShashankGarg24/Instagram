@@ -9,7 +9,9 @@ import java.io.File;
 @Service
 public class FileUploadService {
 
-    public void fileUpload(MultipartFile file, String fileName, String folderName)throws Exception{
-        file.transferTo(new File("C:\\Users\\sg241\\IdeaProjects\\" + folderName + "\\" + fileName));
+    public String fileUpload(MultipartFile file, String fileName, String folderName)throws Exception{
+        String path = "C:\\Users\\sg241\\IdeaProjects\\" + folderName + "\\" + fileName;
+        file.transferTo(new File(path));
+        return path;
     }
 }

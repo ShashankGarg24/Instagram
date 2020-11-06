@@ -46,22 +46,30 @@ public class UserController {
     }
 
 
-    @RequestMapping(method = RequestMethod.DELETE, path = "/deleteProfilePic/{userId}")
-     public ResponseEntity<?> deleteProfilePic(@PathVariable("userId") String userId){
+    @RequestMapping(method = RequestMethod.DELETE, path = "/deleteProfilePic")
+     public ResponseEntity<?> deleteProfilePic(@RequestBody Map<String , String > request){
         try{
-            UUID id = userService.convertToUUID(userId);
-            return userService.deleteProfilePic(id);
+            return userService.deleteProfilePic(request.get("token"));
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
         }
      }
 
-    @RequestMapping(method = RequestMethod.PATCH, path = "/updateProfilePic/{userId}")
-    public ResponseEntity<?> updateProfilePic(@RequestParam("image") MultipartFile image, @PathVariable("userId") String userId){
+    @RequestMapping(method = RequestMethod.PATCH, path = "/updateProfilePic")
+    public ResponseEntity<?> updateProfilePic(@RequestParam("image") MultipartFile image, @RequestParam("token") String token){
         try{
-            UUID id = userService.convertToUUID(userId);
-            return userService.updateProfilePic(image, id);
+            return userService.updateProfilePic(token, image);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.PATCH, path = "/updateProfile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String , String > request){
+        try{
+            return userService.updateProfile(request.get("token"), request.get("name"), request.get("username"), request.get("bio"), request.get("birthDate"), request.get("privacy"));
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
