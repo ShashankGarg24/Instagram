@@ -20,15 +20,15 @@ public class Comment {
   private LocalDateTime commentCreationTimeStamp;
   @UpdateTimestamp
   private LocalDateTime commentLastUpdateTimeStamp;
-  @ManyToOne
+/*  @ManyToOne
   private Posts post;
 //user
   @ManyToOne
   private User commentByUser;
 
-  @OneToMany(mappedBy = "comment")
+  @OneToMany
   private List<SubComment> subComments;
-
+*/
 
   protected Comment() {
   }
@@ -80,7 +80,7 @@ public class Comment {
     this.commentLastUpdateTimeStamp = commentLastUpdateTimeStamp;
   }
 
-  public Posts getPost() {
+ /* public Posts getPost() {
     return post;
   }
 
@@ -107,5 +107,5 @@ public class Comment {
   public void removeSubComments(SubComment subComment) {
     this.subComments.remove(subComment);
   }
-
+*/
 }

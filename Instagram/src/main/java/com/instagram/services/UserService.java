@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -83,6 +84,7 @@ public class UserService implements UserServiceImpl {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> deleteProfilePic(String token) {
         UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
         if (profile.getProfilePicPath() == null) {
@@ -95,6 +97,7 @@ public class UserService implements UserServiceImpl {
         return new ResponseEntity<>("Profile pic removed!", HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseEntity<?> updateProfilePic(String token, MultipartFile image) throws Exception {
         UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
 
@@ -109,6 +112,7 @@ public class UserService implements UserServiceImpl {
         return new ResponseEntity<>("Profile pic updated!", HttpStatus.OK);
     }
 
+    @Transactional
   public ResponseEntity<?> updateProfile(String token, String name, String username, String userBio, String birthDate, String profilePrivacy) throws Exception {
       try{
           int flag = 0;

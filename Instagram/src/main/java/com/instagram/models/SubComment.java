@@ -23,12 +23,12 @@ public class SubComment {
   @UpdateTimestamp
   private LocalDateTime subcommentLastUpdateTimeStamp;
   //user
-  @ManyToOne
+ /* @ManyToOne
   private User subCommentByUser;
 
   @ManyToOne
   private Comment comment;
-
+*/
   protected SubComment() {
   }
 
@@ -80,12 +80,12 @@ public class SubComment {
   }
 
 
-
+/*
   public Comment getComment() {
     return comment;
   }
 
   public void setComment(Comment comment) {
     this.comment = comment;
-  }
+  }*/
 }

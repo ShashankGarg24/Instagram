@@ -35,18 +35,18 @@ public class User{
   private boolean enabled;
   private boolean verified;
 
-  @OneToOne(fetch = FetchType.LAZY,  cascade = CascadeType.ALL)
+ /* @OneToOne(fetch = FetchType.LAZY,  cascade = CascadeType.ALL)
   private Media profilePic;
 
-  @OneToMany(mappedBy = "postByUser")
+  @OneToMany
   private List<Posts> posts;
 
-  @OneToMany(mappedBy = "commentByUser")
+  @OneToMany
   private List<Comment> comments;
 
-  @OneToMany(mappedBy = "subCommentByUser")
+  @OneToMany
   private List<SubComment> subComments;
-
+*/
 
 
   //followers
@@ -155,7 +155,7 @@ public class User{
   public void setVerified(boolean verified) {
     this.verified = verified;
   }
-
+/*
   public Media getProfilePic() {
     return profilePic;
   }
@@ -174,6 +174,6 @@ public class User{
 
   public void removePost(Posts post) {
     this.posts.remove(post);
-  }
+  }*/
 
 }

@@ -6,6 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.*;
@@ -25,19 +26,16 @@ public class Posts {
   private String caption;
   private boolean commentActivity;
 
-  @OneToMany
-  private List<Media> Media;
-
-  @ManyToOne
-  private User postByUser;
+  @OneToMany(fetch = FetchType.LAZY)
+  private List<Media> media = new ArrayList<>();
 
   //tagged users
 
-  @OneToMany(mappedBy = "post")
+ /* @OneToMany
   private List<Comment> comments;
+*/
 
-
-  protected Posts() {
+  public Posts() {
 
   }
 
@@ -107,48 +105,25 @@ public class Posts {
     this.commentActivity = commentActivity;
   }
 
-  public LocalDateTime getPostCreationTimeStamp() {
-    return postCreationTimeStamp;
-  }
-
-  public void setPostCreationTimeStamp(LocalDateTime postCreationTimeStamp) {
-    this.postCreationTimeStamp = postCreationTimeStamp;
-  }
-
-  public LocalDateTime getPostLastUpdateTimeStamp() {
-    return postLastUpdateTimeStamp;
-  }
 
   public void setPostLastUpdateTimeStamp(LocalDateTime postLastUpdateTimeStamp) {
     this.postLastUpdateTimeStamp = postLastUpdateTimeStamp;
   }
 
 
-  public void setMedias(List<Media> Medias) {
-    this.Media = Medias;
-  }
-
-  public User getPostByUser() {
-    return postByUser;
-  }
-
-  public void setPostByUser(User postByUser) {
-    this.postByUser = postByUser;
-  }
-
   public List<Media> getMedia() {
-    return Media;
+    return media;
   }
 
-  public void addMedias(Media Media) {
-    this.Media.add(Media);
+  public void addMedia(Media media) {
+    this.media.add(media);
   }
 
-  public void removeMedias(Media Media) {
-    this.Media.remove(Media);
+  public void removeMedia(Media Media) {
+    this.media.remove(Media);
   }
 
-  public List<Comment> getComments() {
+ /* public List<Comment> getComments() {
     return comments;
   }
 
@@ -158,5 +133,5 @@ public class Posts {
 
   public void removeComment(Comment comment) {
     this.comments.remove(comment);
-  }
+  }*/
 }

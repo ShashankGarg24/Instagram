@@ -12,8 +12,10 @@ import java.util.concurrent.ExecutionException;
 
 import com.instagram.models.User;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Service
 public interface RegistrationImpl {
 
   ResponseEntity<?> registerUser(SignUp user)

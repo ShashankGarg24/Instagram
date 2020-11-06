@@ -23,15 +23,10 @@ public class Posts {
     @Autowired
     UserServiceImpl userService;
 
-    @RequestMapping(method = RequestMethod.POST, path = "/uploadPost/{username}")
-    public ResponseEntity<?> uploadPost(@PathVariable String username , @RequestParam List<MultipartFile> media, @RequestParam String location, @RequestParam String caption, @RequestParam boolean commentActivity) {
-        try{
-            postService.uploadPost(username, media, location, caption, commentActivity);
-            return new ResponseEntity<>("Post uploaded succesfully!", HttpStatus.ACCEPTED);
-        }
-        catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
-        }
+    @RequestMapping(method = RequestMethod.POST, path = "/uploadPost")
+    public ResponseEntity<?> uploadPost(@RequestParam String token , @RequestParam List<MultipartFile> media, @RequestParam String location, @RequestParam String caption, @RequestParam boolean commentActivity) throws Exception {
+
+        return postService.uploadPost(token, media, location, caption, commentActivity);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/deletePost/{postId}")

@@ -14,7 +14,9 @@ public class Media {
     private boolean pinned;
 
     public Media() {
+        this.mediaId = UUID.randomUUID();
     }
+
 
     public UUID getMediaId() {
         return mediaId;

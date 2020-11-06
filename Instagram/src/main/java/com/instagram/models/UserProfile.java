@@ -6,6 +6,7 @@ import javax.persistence.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -24,33 +25,31 @@ public class UserProfile {
     private LocalDateTime profileCreationTimeStamp;
     private String profilePicPath;
     private String birthDate;
-    private int postNumber = 0;
-    private int followersCount = 0;
-    private int followingCount = 0;
 
     @OneToMany
-    private List<Media> postMedia;
+    private List<Media> postMedia = new ArrayList<Media>();
 
-    @OneToMany(mappedBy = "postByUser")
+    @OneToMany(fetch = FetchType.LAZY)
     private List<Posts> posts;
 
-    @OneToMany(mappedBy = "commentByUser")
+  /*  @OneToMany
     private List<Comment> comments;
 
-    @OneToMany(mappedBy = "subCommentByUser")
+    @OneToMany
     private List<SubComment> subComments;
-
+*/
     //followers
     //followings
 
     public UserProfile() {
-        this.profileCreationTimeStamp= LocalDateTime.now();
+
     }
 
     public UserProfile(String username, String fullName, String userPrivacy, boolean enabled) {
         this.profileId = UUID.randomUUID();
         this.username = username;
         this.fullName = fullName;
+        this.profileCreationTimeStamp= LocalDateTime.now();
         this.userPrivacy = userPrivacy;
         this.enabled = enabled;
     }
@@ -63,7 +62,7 @@ public class UserProfile {
         this.profileId = profileId;
     }
 
-    public int getPostNumber() {
+   /* public int getPostNumber() {
         return postNumber;
     }
 
@@ -86,7 +85,7 @@ public class UserProfile {
     public void setFollowingCount() {
         ++this.followingCount;
     }
-
+*/
     public String getUsername() {
         return username;
     }
@@ -158,6 +157,14 @@ public class UserProfile {
 
     public void setBirthDate(String birthDate) {
         this.birthDate = parseDate(birthDate);
+    }
+
+    public List<Media> getPostMedia() {
+        return postMedia;
+    }
+
+    public void addPostMedia(Media postMedia) {
+        this.postMedia.add(postMedia);
     }
 
     public List<Posts> getPosts() {

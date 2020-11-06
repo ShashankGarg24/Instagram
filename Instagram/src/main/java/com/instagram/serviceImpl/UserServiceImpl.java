@@ -6,6 +6,7 @@ import com.instagram.models.UserCredentials;
 import com.instagram.models.UserProfile;
 import org.checkerframework.common.value.qual.StringVal;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+
+@Service
 public interface UserServiceImpl {
 
     UserCredentials findUserByEmail(String userEmail);
