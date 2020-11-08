@@ -28,13 +28,15 @@ public class Posts {
   private String location;
   private String caption;
   private boolean commentActivity;
+  private boolean pinned;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JsonIgnore
   private UserProfile profile;
 
- /* @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  private List<Media> media = new ArrayList<>();
+  @OneToMany(fetch = FetchType.LAZY)
+  private List<Media> postMedia = new ArrayList<>();
+
 
   //tagged users
 
@@ -47,13 +49,14 @@ public class Posts {
   }
 
 
-  public Posts( String location, String caption, boolean commentActivity) {
+  public Posts( String location, String caption, boolean commentActivity, boolean pinned) {
     this.postId = UUID.randomUUID();
     this.postCreationTimeStamp = LocalDateTime.now();
     this.postLastUpdateTimeStamp = LocalDateTime.now();
     this.location = location;
     this.caption = caption;
     this.commentActivity = commentActivity;
+    this.pinned = pinned;
   }
 
   public UUID getPostId() {
@@ -125,20 +128,27 @@ public class Posts {
     this.profile = profile;
   }
 
-
-  /*public List<Media> getMedia() {
-    return media;
+  public boolean isPinned() {
+    return pinned;
   }
 
-  public void addMedia(Media media) {
-    this.media.add(media);
+  public void setPinned(boolean pinned) {
+    this.pinned = pinned;
   }
 
-  public void removeMedia(Media Media) {
-    this.media.remove(Media);
+  public List<Media> getPostMedia() {
+    return postMedia;
   }
 
- /* public List<Comment> getComments() {
+  public void addPostMedia(Media postMedia) {
+    this.postMedia.add(postMedia);
+  }
+
+  public void removePostMedia(Media postMedia) {
+    this.postMedia.remove(postMedia);
+  }
+
+/* public List<Comment> getComments() {
     return comments;
   }
 

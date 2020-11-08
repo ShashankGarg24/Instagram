@@ -2,6 +2,7 @@ package com.instagram.services;
 
 
 import com.instagram.Configuration.JwtUtil;
+import com.instagram.DTO.PostDTO;
 import com.instagram.models.Media;
 import com.instagram.models.Posts;
 import com.instagram.models.UserProfile;
@@ -56,28 +57,41 @@ public class PostService implements PostServiceImpl {
     JwtUtil jwtUtil;
 
 
-    @Transactional
     public ResponseEntity<?> uploadPost(String token, List<MultipartFile> media, String location, String caption, boolean commentActivity) throws Exception {
 
         try{
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
-            Posts post = new Posts(location, caption, commentActivity);
+            Posts post = new Posts(location, caption, commentActivity, false);
             post.setProfile(profile);
             postRepository.save(post);
-
             for (MultipartFile file : media) {
                 Media postMedia = new Media();
                 String path = fileUploadService.fileUpload(file, postMedia.getMediaId().toString(), "instaPosts");
                 postMedia.setData(path, false, post.getPostId(), post);
                 mediaRepo.save(postMedia);
                 profile.addPostMedia(postMedia);
-                profileRepository.save(profile);
             }
+            profileRepository.save(profile);
             profile.increasePostNumber();
             return new ResponseEntity<>("Post Uploaded! " + post.getPostId(), HttpStatus.ACCEPTED);
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    public ResponseEntity<?> viewPost(String postId){
+        try{
+            Posts post = postRepository.findByPostId(UUID.fromString(postId));
+            if(post == null){
+                return new ResponseEntity<>("no such post available!", HttpStatus.BAD_REQUEST);
+            }
+
+            PostDTO postDTO = new PostDTO(post, post.getProfile().getPostMedia());
+            return new ResponseEntity<>(postDTO, HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.valueOf(402));
         }
     }
 
@@ -97,12 +111,13 @@ public class PostService implements PostServiceImpl {
     public ResponseEntity<?> unpinPost(String token, String postId) {
         try {
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
-            Posts post = postRepository.findByPostId(UUID.fromString(postId));
-            for (Media postMedia : profile.getPostMedia()) {
-                if(postMedia.getPostId().equals(post.getPostId())) {
+            UUID postUUID = UUID.fromString(postId);
+            Posts post = postRepository.findByPostId(postUUID);
+            post.setPinned(true);
+            postRepository.save(post);
+            for (Media postMedia : mediaRepo.findAllByPostId(postUUID)) {
                     postMedia.setPinned(false);
                     mediaRepo.save(postMedia);
-                }
             }
             return new ResponseEntity<>("Post unpinned!", HttpStatus.ACCEPTED);
         } catch (Exception e) {
@@ -119,13 +134,20 @@ public class PostService implements PostServiceImpl {
                 if(media.isPinned()){
                     media.setPinned(false);
                     mediaRepo.save(media);
+                    Posts post = postRepository.findByPostId(media.getPostId());
+                    post.setPinned(false);
+                    postRepository.save(post);
+
                 }
             }
             UUID postUUID = UUID.fromString(postId);
+            Posts postToBePinned = postRepository.findByPostId(postUUID);
             for (Media media : mediaRepo.findAllByPostId(postUUID)) {
                 media.setPinned(true);
                 mediaRepo.save(media);
             }
+            postToBePinned.setPinned(true);
+            postRepository.save(postToBePinned);
             return new ResponseEntity<>("Post pinned!", HttpStatus.ACCEPTED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

@@ -30,9 +30,16 @@ public class Posts {
         return postService.uploadPost(token, media, location, caption, commentActivity);
     }
 
+
+
     @RequestMapping(method = RequestMethod.PATCH, path = "/updatePost")
     public ResponseEntity<?> updatePost(@RequestBody Map<String, String > request){
         return postService.updatePost(request.get("token"), request.get("postId"), request.get("caption"));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/viewPost")
+    public ResponseEntity<?> viewPost(@RequestBody Map<String, String > request){
+        return postService.viewPost(request.get("postId"));
     }
 
     @RequestMapping(method = RequestMethod.PATCH, path = "/pinPost")

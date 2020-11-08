@@ -21,4 +21,6 @@ public interface PostServiceImpl {
     ResponseEntity<?> pinPost(String token, String postId);
 
     ResponseEntity<?> deletePost(String token, String postId);
+
+    ResponseEntity<?> viewPost(String postId);
 }
