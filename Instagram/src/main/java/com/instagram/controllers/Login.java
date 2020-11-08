@@ -1,13 +1,12 @@
 package com.instagram.controllers;
 
 import com.instagram.Configuration.JwtUtil;
+import com.instagram.DTO.ProfileDTO;
 import com.instagram.models.*;
 import com.instagram.repository.ProfileRepository;
 import com.instagram.repository.UserCredentialsRepo;
 import com.instagram.serviceImpl.UserServiceImpl;
-import com.instagram.services.UserService;
 import com.instagram.services.VerificationMail;
-import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -17,12 +16,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -74,13 +72,18 @@ public class Login {
                 }
 
                 map.put(request.getUsername(), request.getPassword());
-                return new ResponseEntity<>(user.getProfiles(), HttpStatus.OK);
+                List<UserProfile> profiles = profileRepository.findAllByUserUserId(user.getUserId());
+
+                if(profiles.isEmpty()){
+                    return new ResponseEntity<>("No profiles created yet", HttpStatus.EXPECTATION_FAILED);
+                }
+                return new ResponseEntity<>(profiles, HttpStatus.OK);
 
             } else {
                 System.out.println(1);
                 UserProfile profile = profileRepository.findByUsername(request.getUsername());
                 System.out.println(2);
-                user = userCredentialsRepo.findByProfilesProfileId(profile.getProfileId());
+                user = profile.getUser();
                 System.out.println(3);
                 checkAccountAndPassword(user, request);
                 map.put(user.getUserEmail(), request.getPassword());
@@ -98,7 +101,7 @@ public class Login {
 
         UUID profileId = UUID.fromString(request.get("id"));
         UserProfile profile = profileRepository.findByProfileId(profileId);
-        UserCredentials user = userCredentialsRepo.findByProfilesProfileId(profileId);
+        UserCredentials user = profile.getUser();
         System.out.println(map.get(user.getUserEmail()));
         return createLoginToken(profile, map.get(user.getUserEmail()));
     }
@@ -107,8 +110,9 @@ public class Login {
     public ResponseEntity<?> getAllProfiles(@RequestBody Map<String, String> request){
         System.out.println(map);
         UUID profileId = UUID.fromString(request.get("id"));
-        UserCredentials user = userCredentialsRepo.findByProfilesProfileId(profileId);
-        return new ResponseEntity<>(user.getProfiles(), HttpStatus.OK);
+        UserProfile profile = profileRepository.findByProfileId(profileId);
+        UserCredentials user = profile.getUser();
+        return new ResponseEntity<>(profileRepository.findAllByUserUserId(user.getUserId()), HttpStatus.OK);
     }
     private void checkAccountAndPassword(UserCredentials user, LoginRequest request) throws Exception {
 

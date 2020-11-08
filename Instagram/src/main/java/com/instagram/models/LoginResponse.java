@@ -1,5 +1,7 @@
 package com.instagram.models;
 
+import com.instagram.DTO.ProfileDTO;
+
 public class LoginResponse {
 
     private final String accessToken;

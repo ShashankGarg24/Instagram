@@ -176,7 +176,7 @@ public class UserService implements UserServiceImpl {
             if (userDetail.contains("@")) {
                 user = findUserByEmail(userDetail);
             } else {
-                user = userCredentialsRepo.findByProfilesProfileId(findUserByUsername(userDetail).getProfileId());
+                user = profileRepository.findByUsername(userDetail).getUser();
             }
 
             if (user == null) {
@@ -203,10 +203,10 @@ public class UserService implements UserServiceImpl {
         userCredentialsRepo.save(user);
         Login login = new Login();
         login.newPassword(userEmail, password);
-        if (user.getProfiles() == null) {
+        if (profileRepository.findAllByUserUserId(user.getUserId()) == null) {
             return new ResponseEntity<>("Password changed. no profile is available", HttpStatus.valueOf(300));
         }
-        return new ResponseEntity<>(user.getProfiles(), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(profileRepository.findAllByUserUserId(user.getUserId()), HttpStatus.ACCEPTED);
     }
 
     public UUID convertToUUID(String userId) {

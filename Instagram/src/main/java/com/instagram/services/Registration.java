@@ -161,7 +161,7 @@ public class Registration implements RegistrationImpl {
       */
 
       UserProfile profile = new UserProfile(username, fullName, "PUBLIC", true);
-      user.setProfiles(profile);
+      profile.setUser(user);
       profileRepository.save(profile);
       userCredentialsRepo.save(user);
 

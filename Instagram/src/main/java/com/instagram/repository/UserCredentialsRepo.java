@@ -16,7 +16,6 @@ public interface UserCredentialsRepo extends CrudRepository<UserCredentials, UUI
 
     UserCredentials findByUserEmail(String userEmail);
 
-    UserCredentials findByProfilesProfileId(UUID profileId);
 
     @Transactional
     @Modifying

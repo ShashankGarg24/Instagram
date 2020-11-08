@@ -18,8 +18,6 @@ public class UserCredentials {
     private String role;
     private boolean verified;
 
-    @OneToMany( fetch = FetchType.LAZY)
-    private List<UserProfile> profiles;
 
     public UserCredentials() {
     }
@@ -62,14 +60,6 @@ public class UserCredentials {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public List<UserProfile> getProfiles() {
-        return profiles;
-    }
-
-    public void setProfiles(UserProfile profile) {
-        this.profiles.add(profile);
     }
 
     public boolean isVerified() {

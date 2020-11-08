@@ -22,10 +22,6 @@ public interface UserServiceImpl {
 
     UserProfile findUserByUsername(String username);
 
-    User findUserByToken(String userToken);
-
-    User findUserByUserId(UUID userId);
-
     UUID convertToUUID(String userId);
 
     ResponseEntity<?> updatePrivacy(String username, String privacy);

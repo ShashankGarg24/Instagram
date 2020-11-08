@@ -35,7 +35,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("Could not find user");
         }
 
-        UserCredentials user = userCredentialsRepo.findByProfilesProfileId(profile.getProfileId());
+        UserCredentials user = profile.getUser();
         String roles[] = user.getRole().split(",");
         List<SimpleGrantedAuthority> rolesL = new ArrayList<>();
         for(String r:roles){

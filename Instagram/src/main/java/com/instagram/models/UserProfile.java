@@ -1,15 +1,13 @@
 package com.instagram.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 public class UserProfile {
@@ -25,12 +23,14 @@ public class UserProfile {
     private LocalDateTime profileCreationTimeStamp;
     private String profilePicPath;
     private String birthDate;
+    private int postNumber = 0;
 
-    @OneToMany
-    private List<Media> postMedia = new ArrayList<Media>();
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
+    private UserCredentials user;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private List<Posts> posts;
+    private List<Media> postMedia = new ArrayList<Media>();
 
   /*  @OneToMany
     private List<Comment> comments;
@@ -62,14 +62,18 @@ public class UserProfile {
         this.profileId = profileId;
     }
 
-   /* public int getPostNumber() {
+   public int getPostNumber() {
         return postNumber;
     }
 
-    public void setPostNumber() {
+    public void increasePostNumber() {
         ++this.postNumber;
     }
 
+    public void decreasePostNumber() {
+        --this.postNumber;
+    }
+/*
     public int getFollowersCount() {
         return followersCount;
     }
@@ -159,6 +163,14 @@ public class UserProfile {
         this.birthDate = parseDate(birthDate);
     }
 
+    public UserCredentials getUser() {
+        return user;
+    }
+
+    public void setUser(UserCredentials user) {
+        this.user = user;
+    }
+
     public List<Media> getPostMedia() {
         return postMedia;
     }
@@ -167,16 +179,7 @@ public class UserProfile {
         this.postMedia.add(postMedia);
     }
 
-    public List<Posts> getPosts() {
-        return posts;
+    public void removePostMedia(Media postMedia){
+        this.postMedia.remove(postMedia);
     }
-
-    public void addPost(Posts post) {
-        this.posts.add(post);
-    }
-
-    public void removePost(Posts post) {
-        this.posts.remove(post);
-    }
-
 }

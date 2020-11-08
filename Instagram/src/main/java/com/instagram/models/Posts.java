@@ -1,15 +1,18 @@
 package com.instagram.models;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.ManyToAny;
-import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.*;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 
 @Entity
 public class Posts {
@@ -26,7 +29,11 @@ public class Posts {
   private String caption;
   private boolean commentActivity;
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JsonIgnore
+  private UserProfile profile;
+
+ /* @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private List<Media> media = new ArrayList<>();
 
   //tagged users
@@ -110,8 +117,16 @@ public class Posts {
     this.postLastUpdateTimeStamp = postLastUpdateTimeStamp;
   }
 
+  public UserProfile getProfile() {
+    return profile;
+  }
 
-  public List<Media> getMedia() {
+  public void setProfile(UserProfile profile) {
+    this.profile = profile;
+  }
+
+
+  /*public List<Media> getMedia() {
     return media;
   }
 
