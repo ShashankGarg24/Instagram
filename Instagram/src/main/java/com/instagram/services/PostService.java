@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +50,9 @@ public class PostService implements PostServiceImpl {
 
     @Autowired
     CommentRepo commentRepo;
+
+    @Autowired
+    ReplyRepo replyRepo;
 
     @Autowired
     USerLIkes userLikes;
@@ -293,6 +297,7 @@ public class PostService implements PostServiceImpl {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> likeDislikePost(String postId, String token){
         try {
             Posts post = postRepository.findByPostId(UUID.fromString(postId));
@@ -321,6 +326,7 @@ public class PostService implements PostServiceImpl {
 
     }
 
+    @Transactional
     public ResponseEntity<?> addComment(String postId, String token, String comment){
         try {
             Posts post = postRepository.findByPostId(UUID.fromString(postId));
@@ -337,6 +343,7 @@ public class PostService implements PostServiceImpl {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> getCommentsByPostId(String postId){
         try {
             Posts post = postRepository.findByPostId(UUID.fromString(postId));
@@ -349,6 +356,7 @@ public class PostService implements PostServiceImpl {
 
     }
 
+    @Transactional
     public ResponseEntity<?> deleteComment(String postId, String commentId, String token){
         try {
             Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
@@ -371,6 +379,8 @@ public class PostService implements PostServiceImpl {
 
     }
 
+
+    @Transactional
     public ResponseEntity<?> likeDislikeComment(String commentId, String token){
         try {
             Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
@@ -392,6 +402,94 @@ public class PostService implements PostServiceImpl {
             userLikes.deleteById(userLike.getId());
 
             return new ResponseEntity<>("Comment disliked.", HttpStatus.valueOf(202));
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+
+    @Transactional
+    public ResponseEntity<?> addReply(String commentId, String token, String reply){
+        try {
+            Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            Reply replyObject = new Reply(reply, profile);
+            replyRepo.save(replyObject);
+            comment.addToReplies(replyObject);
+            comment.increaseReplyCount();
+            commentRepo.save(comment);
+
+            return new ResponseEntity<>("reply uploaded.", HttpStatus.ACCEPTED);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+    @Transactional
+    public ResponseEntity<?> getRepliesByCommentId(String commentId){
+        try {
+            Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
+
+            return new ResponseEntity<>(comment.getReplies(), HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+
+    @Transactional
+    public ResponseEntity<?> deleteReply(String commentId, String replyId,  String token){
+        try {
+            Reply reply = replyRepo.findByReplyId(UUID.fromString(replyId));
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+
+            if(!reply.getParentUser().equals(profile)){
+                return new ResponseEntity<>("Only user who created the reply can delete it!", HttpStatus.EXPECTATION_FAILED);
+            }
+
+            Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
+            comment.removeFromReplies(reply);
+            comment.decreaseReplyCount();
+            commentRepo.save(comment);
+            replyRepo.delete(reply);
+
+            return new ResponseEntity<>("reply successfully deleted.", HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+
+    @Transactional
+    public ResponseEntity<?> likeDislikeReply(String replyId, String token){
+        try {
+            Reply reply = replyRepo.findByReplyId(UUID.fromString(replyId));
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            LikeModel userLike = userLikes.findByProfileIdAndAndContentId(profile.getProfileId(), reply.getReplyId());
+            if (userLike == null) {
+                LikeModel like = new LikeModel(profile.getProfileId(), reply.getReplyId());
+                reply.addUserLikes(like);
+                reply.increaseLikes();
+                userLikes.save(like);
+                replyRepo.save(reply);
+
+                return new ResponseEntity<>("Reply liked.", HttpStatus.ACCEPTED);
+            }
+
+            reply.removeUserLikes(userLike);
+            reply.decreaseLikes();
+            replyRepo.save(reply);
+            userLikes.deleteById(userLike.getId());
+
+            return new ResponseEntity<>("Reply disliked.", HttpStatus.valueOf(202));
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

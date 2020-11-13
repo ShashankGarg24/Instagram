@@ -106,4 +106,24 @@ public class Posts {
     public ResponseEntity<?> likeDislikeComment(@RequestBody Map<String, String> request){
         return postService.likeDislikeComment(request.get("commentId"), request.get("token"));
     }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/addReply")
+    public ResponseEntity<?> addReply(@RequestBody Map<String, String> request){
+        return postService.addReply(request.get("commentId"), request.get("token"), request.get("reply"));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/getReplies")
+    public ResponseEntity<?> getRepliesByCommentId(@RequestBody Map<String, String> request){
+        return postService.getRepliesByCommentId(request.get("commentId"));
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/deleteReply")
+    public ResponseEntity<?> deleteReply(@RequestBody Map<String, String> request){
+        return postService.deleteReply(request.get("commentId"), request.get("replyId"), request.get("token"));
+    }
+
+    @RequestMapping(method = RequestMethod.PATCH, path = "/likeDislikeReply")
+    public ResponseEntity<?> likeDislikeReply(@RequestBody Map<String, String> request){
+        return postService.likeDislikeReply(request.get("replyId"), request.get("token"));
+    }
 }

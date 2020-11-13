@@ -18,6 +18,7 @@ public class Comment {
   private UUID commentId;
   private String comment;
   private Integer likes = 0;
+  private Integer replyCount = 0;
   @CreationTimestamp
   private LocalDateTime commentCreationTimeStamp;
   @UpdateTimestamp
@@ -30,6 +31,10 @@ public class Comment {
   @ManyToOne(fetch = FetchType.LAZY)
   @JsonIgnore
   private UserProfile parentUser;
+
+  @OneToMany
+  @JsonIgnore
+  private List<Reply> replies = new ArrayList<>();
 
 /*
   @OneToMany
@@ -75,6 +80,19 @@ public class Comment {
     --this.likes;
   }
 
+
+  public Integer getReplyCount() {
+    return replyCount;
+  }
+
+  public void increaseReplyCount() {
+    ++this.replyCount;
+  }
+
+  public void decreaseReplyCount() {
+    --this.replyCount;
+  }
+
   public LocalDateTime getCommentCreationTimeStamp() {
     return commentCreationTimeStamp;
   }
@@ -111,18 +129,16 @@ public class Comment {
     this.parentUser = parentUser;
   }
 
- /*
-
-  public List<SubComment> getSubComments() {
-    return subComments;
+  public List<Reply> getReplies() {
+    return replies;
   }
 
-  public void addSubComments(SubComment subComment) {
-    this.subComments.add(subComment);
+  public void addToReplies(Reply reply) {
+    this.replies.add(reply);
   }
 
-  public void removeSubComments(SubComment subComment) {
-    this.subComments.remove(subComment);
+  public void removeFromReplies(Reply reply) {
+    this.replies.remove(reply);
   }
-*/
+
 }
