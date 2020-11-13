@@ -35,4 +35,11 @@ public interface PostServiceImpl {
 
     ResponseEntity<?> likeDislikePost(String postId, String token);
 
+    ResponseEntity<?> addComment(String postId, String token, String comment);
+
+    ResponseEntity<?> getCommentsByPostId(String postId);
+
+    ResponseEntity<?> deleteComment(String postId, String commentId, String token);
+
+    ResponseEntity<?> likeDislikeComment(String commentId, String token);
 }

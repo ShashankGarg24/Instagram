@@ -41,6 +41,8 @@ public class Posts {
   @OneToOne(fetch = FetchType.EAGER)
   private Media postMedia;
 
+  @OneToMany(fetch = FetchType.LAZY)
+  private List<Comment> comments = new ArrayList<>();
 
   //tagged users
 
@@ -164,7 +166,7 @@ public class Posts {
     this.userLikes.remove(userLikes);
   }
 
-  /* public List<Comment> getComments() {
+  public List<Comment> getComments() {
     return comments;
   }
 
@@ -174,5 +176,5 @@ public class Posts {
 
   public void removeComment(Comment comment) {
     this.comments.remove(comment);
-  }*/
+  }
 }

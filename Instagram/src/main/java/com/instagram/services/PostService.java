@@ -48,6 +48,9 @@ public class PostService implements PostServiceImpl {
     MediaRepo mediaRepo;
 
     @Autowired
+    CommentRepo commentRepo;
+
+    @Autowired
     USerLIkes userLikes;
 
     @Autowired
@@ -310,11 +313,90 @@ public class PostService implements PostServiceImpl {
             postRepository.save(post);
             userLikes.deleteById(userLike.getId());
 
-            return new ResponseEntity<>("Post disliked.", HttpStatus.EXPECTATION_FAILED);
+            return new ResponseEntity<>("Post disliked.", HttpStatus.valueOf(205));
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
     }
+
+    public ResponseEntity<?> addComment(String postId, String token, String comment){
+        try {
+            Posts post = postRepository.findByPostId(UUID.fromString(postId));
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            Comment commentObject = new Comment(comment, profile);
+            commentRepo.save(commentObject);
+            post.addComment(commentObject);
+            postRepository.save(post);
+
+            return new ResponseEntity<>("comment uploaded.", HttpStatus.ACCEPTED);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> getCommentsByPostId(String postId){
+        try {
+            Posts post = postRepository.findByPostId(UUID.fromString(postId));
+
+            return new ResponseEntity<>(post.getComments(), HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    public ResponseEntity<?> deleteComment(String postId, String commentId, String token){
+        try {
+            Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+
+            if(!comment.getParentUser().equals(profile)){
+                return new ResponseEntity<>("Only user who created the comment can delete it!", HttpStatus.EXPECTATION_FAILED);
+            }
+
+            Posts post = postRepository.findByPostId(UUID.fromString(postId));
+            post.removeComment(comment);
+            postRepository.save(post);
+            commentRepo.delete(comment);
+
+            return new ResponseEntity<>("comment successfully deleted.", HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    public ResponseEntity<?> likeDislikeComment(String commentId, String token){
+        try {
+            Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            LikeModel userLike = userLikes.findByProfileIdAndAndContentId(profile.getProfileId(), comment.getCommentId());
+            if (userLike == null) {
+                LikeModel like = new LikeModel(profile.getProfileId(), comment.getCommentId());
+                comment.addUserLikes(like);
+                comment.increaseLikes();
+                userLikes.save(like);
+                commentRepo.save(comment);
+
+                return new ResponseEntity<>("Comment liked.", HttpStatus.ACCEPTED);
+            }
+
+            comment.removeUserLikes(userLike);
+            comment.decreaseLikes();
+            commentRepo.save(comment);
+            userLikes.deleteById(userLike.getId());
+
+            return new ResponseEntity<>("Comment disliked.", HttpStatus.valueOf(202));
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
 }

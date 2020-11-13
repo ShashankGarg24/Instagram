@@ -27,12 +27,11 @@ public class Comment {
   @JsonIgnore
   private List<LikeModel> userLikes = new ArrayList<>();
 
-/*  @ManyToOne
-  private Posts post;
-//user
-  @ManyToOne
-  private User commentByUser;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JsonIgnore
+  private UserProfile parentUser;
 
+/*
   @OneToMany
   private List<SubComment> subComments;
 */
@@ -40,11 +39,12 @@ public class Comment {
   protected Comment() {
   }
 
-  public Comment(String comment, LocalDateTime commentCreationTimeStamp, LocalDateTime commentLastUpdateTimeStamp) {
+  public Comment(String comment, UserProfile parentUser) {
     this.commentId = UUID.randomUUID();
     this.comment = comment;
     this.commentCreationTimeStamp = LocalDateTime.now();
     this.commentLastUpdateTimeStamp = LocalDateTime.now();
+    this.parentUser = parentUser;
   }
 
   public UUID getCommentId() {
@@ -67,8 +67,12 @@ public class Comment {
     return likes;
   }
 
-  public void setLikes(Integer likes) {
-    this.likes = likes;
+  public void increaseLikes() {
+    ++this.likes;
+  }
+
+  public void decreaseLikes() {
+    --this.likes;
   }
 
   public LocalDateTime getCommentCreationTimeStamp() {
@@ -87,21 +91,27 @@ public class Comment {
     this.commentLastUpdateTimeStamp = commentLastUpdateTimeStamp;
   }
 
- /* public Posts getPost() {
-    return post;
+  public List<LikeModel> getUserLikes() {
+    return userLikes;
   }
 
-  public void setPost(Posts post) {
-    this.post = post;
+  public void addUserLikes(LikeModel userLikes) {
+    this.userLikes.add(userLikes);
   }
 
-  public User getCommentByUser() {
-    return commentByUser;
+  public void removeUserLikes(LikeModel userLikes) {
+    this.userLikes.remove(userLikes);
   }
 
-  public void setCommentByUser(User commentByUser) {
-    this.commentByUser = commentByUser;
+  public UserProfile getParentUser() {
+    return parentUser;
   }
+
+  public void setParentUser(UserProfile parentUser) {
+    this.parentUser = parentUser;
+  }
+
+ /*
 
   public List<SubComment> getSubComments() {
     return subComments;

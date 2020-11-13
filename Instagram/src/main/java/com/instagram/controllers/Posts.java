@@ -86,4 +86,24 @@ public class Posts {
         return postService.likeDislikePost(request.get("postId"), request.get("token"));
 
     }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/addComment")
+    public ResponseEntity<?> addComment(@RequestBody Map<String, String> request){
+        return postService.addComment(request.get("postId"), request.get("token"), request.get("comment"));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/getComments")
+    public ResponseEntity<?> getCommentsByPostId(@RequestBody Map<String, String> request){
+        return postService.getCommentsByPostId(request.get("postId"));
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/deleteComment")
+    public ResponseEntity<?> deleteComment(@RequestBody Map<String, String> request){
+        return postService.deleteComment(request.get("postId"), request.get("commentId"), request.get("token"));
+    }
+
+    @RequestMapping(method = RequestMethod.PATCH, path = "/likeDislikeComment")
+    public ResponseEntity<?> likeDislikeComment(@RequestBody Map<String, String> request){
+        return postService.likeDislikeComment(request.get("commentId"), request.get("token"));
+    }
 }
