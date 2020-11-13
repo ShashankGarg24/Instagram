@@ -25,6 +25,9 @@ public class UserProfile {
     private String birthDate;
     private int postNumber = 0;
     private int categoryNumber = 0;
+    private int followersNumber = 0;
+    private int followingNumber = 0;
+
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
@@ -36,6 +39,14 @@ public class UserProfile {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Media> postMedia = new ArrayList<Media>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<UserProfile> followers = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<UserProfile> following = new ArrayList<>();
 
   /*  @OneToMany
     private List<Comment> comments;
@@ -90,23 +101,32 @@ public class UserProfile {
     public void decreaseCategoryNumber() {
         --this.categoryNumber;
     }
-/*
-    public int getFollowersCount() {
-        return followersCount;
+
+    public int getFollowersNumber() {
+        return followersNumber;
     }
 
-    public void setFollowersCount() {
-        ++this.followersCount;
+    public void addToFollowersNumber() {
+        ++this.followersNumber;
     }
 
-    public int getFollowingCount() {
-        return followingCount;
+    public void deductFollowersNumber() {
+        --this.followersNumber;
     }
 
-    public void setFollowingCount() {
-        ++this.followingCount;
+
+    public int getFollowingNumber() {
+        return followingNumber;
     }
-*/
+
+    public void addToFollowingNumber() {
+        ++this.followingNumber;
+    }
+
+    public void deductFollowingNumber() {
+        --this.followingNumber;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -211,5 +231,29 @@ public class UserProfile {
 
     public void removePostMedia(Media postMedia){
         this.postMedia.remove(postMedia);
+    }
+
+    public List<UserProfile> getFollowers() {
+        return followers;
+    }
+
+    public void addFollowers(UserProfile follower) {
+        this.followers.add(follower);
+    }
+
+    public void removeFollowers(UserProfile follower) {
+        this.followers.remove(follower);
+    }
+
+    public List<UserProfile> getFollowing() {
+        return following;
+    }
+
+    public void addFollowing(UserProfile following) {
+        this.following.add(following);
+    }
+
+    public void removeFollowing(UserProfile following) {
+        this.following.remove(following);
     }
 }

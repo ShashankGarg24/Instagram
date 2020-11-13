@@ -18,6 +18,7 @@ public interface UserRepository extends CrudRepository<User, UUID> {
 
     User findByUserId(UUID userId);
 
+
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.fullName = ?1 , u.username = ?2  WHERE u.userEmail= ?3")

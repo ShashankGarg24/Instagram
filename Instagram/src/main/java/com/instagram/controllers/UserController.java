@@ -75,4 +75,18 @@ public class UserController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
         }
     }
+
+    @RequestMapping(method = RequestMethod.PATCH, path = "/follow")
+    public ResponseEntity<?> follow(@RequestBody Map<String , String > request){
+
+            return userService.follow(request.get("token"), request.get("userId"));
+    }
+
+    @RequestMapping(method = RequestMethod.PATCH, path = "/unfollow")
+    public ResponseEntity<?> unfollow(@RequestBody Map<String , String > request){
+
+        return userService.unfollow(request.get("token"), request.get("userId"));
+    }
+
+
 }

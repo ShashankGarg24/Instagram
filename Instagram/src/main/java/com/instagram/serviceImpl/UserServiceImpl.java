@@ -40,4 +40,7 @@ public interface UserServiceImpl {
 
     void updateUser(UserCredentials user);
 
+    ResponseEntity<?> follow(String token, String userId);
+
+    ResponseEntity<?> unfollow(String token, String userId);
 }
