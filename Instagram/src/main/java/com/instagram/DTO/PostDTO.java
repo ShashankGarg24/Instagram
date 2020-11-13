@@ -11,9 +11,9 @@ import java.util.List;
 public class PostDTO {
 
     private Posts post;
-    private List<Media> postMedia = new ArrayList<>();
+    private Media postMedia;
 
-    public PostDTO(Posts post, List<Media> postMedia) {
+    public PostDTO(Posts post, Media postMedia) {
         this.post = post;
         this.postMedia = postMedia;
     }

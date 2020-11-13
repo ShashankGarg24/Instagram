@@ -30,12 +30,16 @@ public class Posts {
   private boolean commentActivity;
   private boolean pinned;
 
+  @OneToMany
+  @JsonIgnore
+  private List<LikeModel> userLikes = new ArrayList<>();
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JsonIgnore
   private UserProfile profile;
 
-  @OneToMany(fetch = FetchType.LAZY)
-  private List<Media> postMedia = new ArrayList<>();
+  @OneToOne(fetch = FetchType.EAGER)
+  private Media postMedia;
 
 
   //tagged users
@@ -71,8 +75,12 @@ public class Posts {
     return likes;
   }
 
-  public void setLikes(Integer likes) {
-    this.likes = likes;
+  public void increaseLikes() {
+    ++this.likes;
+  }
+
+  public void decreaseLikes() {
+    --this.likes;
   }
 
   public LocalDateTime getpostCreationTimeStamp() {
@@ -136,19 +144,27 @@ public class Posts {
     this.pinned = pinned;
   }
 
-  public List<Media> getPostMedia() {
+  public Media getPostMedia() {
     return postMedia;
   }
 
-  public void addPostMedia(Media postMedia) {
-    this.postMedia.add(postMedia);
+  public void setPostMedia(Media postMedia) {
+    this.postMedia = postMedia;
   }
 
-  public void removePostMedia(Media postMedia) {
-    this.postMedia.remove(postMedia);
+  public List<LikeModel> getUserLikes() {
+    return userLikes;
   }
 
-/* public List<Comment> getComments() {
+  public void addUserLikes(LikeModel userLikes) {
+    this.userLikes.add(userLikes);
+  }
+
+  public void removeUserLikes(LikeModel userLikes) {
+    this.userLikes.remove(userLikes);
+  }
+
+  /* public List<Comment> getComments() {
     return comments;
   }
 

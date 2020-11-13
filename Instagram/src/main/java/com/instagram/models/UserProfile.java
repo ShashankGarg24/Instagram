@@ -24,10 +24,15 @@ public class UserProfile {
     private String profilePicPath;
     private String birthDate;
     private int postNumber = 0;
+    private int categoryNumber = 0;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
     private UserCredentials user;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<CustomCategory> categories = new ArrayList<CustomCategory>();
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Media> postMedia = new ArrayList<Media>();
@@ -72,6 +77,18 @@ public class UserProfile {
 
     public void decreasePostNumber() {
         --this.postNumber;
+    }
+
+    public int getCategoryNumber() {
+        return categoryNumber;
+    }
+
+    public void increaseCategoryNumber() {
+        ++this.categoryNumber;
+    }
+
+    public void decreaseCategoryNumber() {
+        --this.categoryNumber;
     }
 /*
     public int getFollowersCount() {
@@ -170,6 +187,19 @@ public class UserProfile {
     public void setUser(UserCredentials user) {
         this.user = user;
     }
+
+    public List<CustomCategory> getCategories() {
+        return categories;
+    }
+
+    public void addCategories(CustomCategory category) {
+        this.categories.add(category);
+    }
+
+    public void removeCategories(CustomCategory category) {
+        this.categories.remove(category);
+    }
+
 
     public List<Media> getPostMedia() {
         return postMedia;

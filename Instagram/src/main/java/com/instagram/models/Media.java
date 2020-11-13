@@ -1,11 +1,9 @@
 package com.instagram.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.transaction.annotation.Transactional;
-
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -15,24 +13,20 @@ public class Media {
     @Id
     @Column(nullable = false, unique = true)
     private UUID mediaId;
-    private String mediaPath;
+    @ElementCollection
+    private List<String> mediaPath = new ArrayList<>();
     private boolean pinned;
     private UUID postId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Posts posts;
 
 
     public Media() {
-        this.mediaId = UUID.randomUUID();
     }
 
-    public void setData(String mediaPath, boolean pinned, UUID postId, Posts posts) {
-        this.mediaPath = mediaPath;
+    public Media(boolean pinned, UUID postId) {
+        this.mediaId = UUID.randomUUID();
         this.pinned = pinned;
         this.postId = postId;
-        this.posts = posts;
     }
 
     public UUID getMediaId() {
@@ -43,11 +37,11 @@ public class Media {
         this.mediaId = mediaId;
     }
 
-    public String getMediaPath() {
+    public List<String> getMediaPath() {
         return mediaPath;
     }
 
-    public void setMediaPath(String mediaPath) {
+    public void setmediaPath(List<String> mediaPath) {
         this.mediaPath = mediaPath;
     }
 
@@ -67,11 +61,4 @@ public class Media {
         this.postId = postId;
     }
 
-    public Posts getPosts() {
-        return posts;
-    }
-
-    public void setPosts(Posts posts) {
-        this.posts = posts;
-    }
 }

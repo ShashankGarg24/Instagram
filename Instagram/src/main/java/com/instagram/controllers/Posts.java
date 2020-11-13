@@ -54,8 +54,36 @@ public class Posts {
     }
 
 
-        @RequestMapping(method = RequestMethod.DELETE, path = "/deletePost")
+    @RequestMapping(method = RequestMethod.DELETE, path = "/deletePost")
     public ResponseEntity<?> deletePost(@RequestBody Map<String, String> request){
-            return postService.deletePost(request.get("token"), request.get("postId"));
+        return postService.deletePost(request.get("token"), request.get("postId"));
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/createNewCategory")
+    public ResponseEntity<?> createNewCategory(@RequestBody Map<String, String> request){
+        return postService.createNewCategory(request.get("name"), request.get("postId"), request.get("token"));
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/addToCategory")
+    public ResponseEntity<?> addToCategory(@RequestBody Map<String, String> request){
+        return postService.addToCategory(request.get("postId"), request.get("categoryId"), request.get("token"));
+
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/removeFromCategory")
+    public ResponseEntity<?> removeFromCategory(@RequestBody Map<String, String> request){
+        return postService.removeFromCategory(request.get("postId"), request.get("categoryId"), request.get("token"));
+
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/deleteCategory")
+    public ResponseEntity<?> deleteCategory(@RequestBody Map<String, String> request){
+        return postService.deleteCategory(request.get("categoryId"), request.get("token"));
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/likeDislikePost")
+    public ResponseEntity<?> likeDislikePost(@RequestBody Map<String, String> request){
+        return postService.likeDislikePost(request.get("postId"), request.get("token"));
+
     }
 }

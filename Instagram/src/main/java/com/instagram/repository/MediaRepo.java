@@ -10,5 +10,5 @@ import java.util.UUID;
 
 
 public interface MediaRepo extends JpaRepository<Media, UUID> {
-    List<Media> findAllByPostId(UUID postId);
+    Media findByPostId(UUID postId);
 }
