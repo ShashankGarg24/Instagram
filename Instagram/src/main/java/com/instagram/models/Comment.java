@@ -24,7 +24,7 @@ public class Comment {
   @UpdateTimestamp
   private LocalDateTime commentLastUpdateTimeStamp;
 
-  @OneToMany
+  @OneToMany(orphanRemoval = true)
   @JsonIgnore
   private List<LikeModel> userLikes = new ArrayList<>();
 
@@ -32,7 +32,7 @@ public class Comment {
   @JsonIgnore
   private UserProfile parentUser;
 
-  @OneToMany
+  @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true)
   @JsonIgnore
   private List<Reply> replies = new ArrayList<>();
 

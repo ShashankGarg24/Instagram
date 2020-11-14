@@ -23,7 +23,7 @@ public class Reply {
   private LocalDateTime replyLastUpdateTimeStamp;
 
 
-  @OneToMany
+  @OneToMany(orphanRemoval = true)
   @JsonIgnore
   private List<LikeModel> userLikes = new ArrayList<>();
 

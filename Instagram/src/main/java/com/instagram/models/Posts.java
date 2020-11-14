@@ -30,7 +30,7 @@ public class Posts {
   private boolean commentActivity;
   private boolean pinned;
 
-  @OneToMany
+  @OneToMany(orphanRemoval = true)
   @JsonIgnore
   private List<LikeModel> userLikes = new ArrayList<>();
 
@@ -41,7 +41,7 @@ public class Posts {
   @OneToOne(fetch = FetchType.EAGER)
   private Media postMedia;
 
-  @OneToMany(fetch = FetchType.LAZY)
+  @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true)
   private List<Comment> comments = new ArrayList<>();
 
   //tagged users
