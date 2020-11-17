@@ -25,9 +25,9 @@ public class Posts {
     UserServiceImpl userService;
 
     @RequestMapping(method = RequestMethod.POST, path = "/uploadPost")
-    public ResponseEntity<?> uploadPost(@RequestParam String token , @RequestParam List<MultipartFile> media, @RequestParam String location, @RequestParam String caption, @RequestParam boolean commentActivity) throws Exception {
+    public ResponseEntity<?> uploadPost(@RequestParam String token , @RequestParam List<MultipartFile> media, @RequestParam String location, @RequestParam String caption) throws Exception {
 
-        return postService.uploadPost(token, media, location, caption, commentActivity);
+        return postService.uploadPost(token, media, location, caption);
     }
 
 
@@ -81,7 +81,7 @@ public class Posts {
         return postService.deleteCategory(request.get("categoryId"), request.get("token"));
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/likeDislikePost")
+    @RequestMapping(method = RequestMethod.POST, path = "/likeDislikePost")//ACCEPT BOOLEN VALUE
     public ResponseEntity<?> likeDislikePost(@RequestBody Map<String, String> request){
         return postService.likeDislikePost(request.get("postId"), request.get("token"));
 
@@ -125,5 +125,23 @@ public class Posts {
     @RequestMapping(method = RequestMethod.PATCH, path = "/likeDislikeReply")
     public ResponseEntity<?> likeDislikeReply(@RequestBody Map<String, String> request){
         return postService.likeDislikeReply(request.get("replyId"), request.get("token"));
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/uploadStory")
+    public ResponseEntity<?> uploadStory(@RequestParam String token , @RequestParam List<MultipartFile> media) throws Exception {
+
+        return postService.uploadStory(token, media);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/getRecentPosts")
+    public ResponseEntity<?> getPostsFromFollowing(@RequestBody Map<String, String> request){
+
+        return postService.getPostsFromFollowing(request.get("token"));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/getAllPostsByLikes")
+    public ResponseEntity<?> getAllPostsByLikes(){
+
+        return postService.getAllPostsByLikes();
     }
 }

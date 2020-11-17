@@ -75,7 +75,7 @@ public class Login {
                 List<UserProfile> profiles = profileRepository.findAllByUserUserId(user.getUserId());
 
                 if(profiles.isEmpty()){
-                    return new ResponseEntity<>("No profiles created yet", HttpStatus.EXPECTATION_FAILED);
+                    return new ResponseEntity<>("No profiles created yet", HttpStatus.valueOf(300));
                 }
                 return new ResponseEntity<>(profiles, HttpStatus.OK);
 

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class JwtUtil {
 
   private String SECRET_KEY = "secret";
-  private long JWT_EXPIRY = 10 * 60; //10 minutes
+  private long JWT_EXPIRY = 8 * 60 * 60; //8 HOURS
   private long JWT_REFRESH_EXPIRY = 7 * 24 * 60 * 60;//7 days
 
   public String getUsernameFromToken(String token) {

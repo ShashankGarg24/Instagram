@@ -88,5 +88,16 @@ public class UserController {
         return userService.unfollow(request.get("token"), request.get("userId"));
     }
 
+    @RequestMapping(method = RequestMethod.GET, path = "/searchUser")
+    public ResponseEntity<?> searchUser(@RequestBody Map<String , String > request){
 
-}
+        return userService.searchUser(request.get("keyword"));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/getSuggestedUsers")
+    public ResponseEntity<?> getSuggestedUsers(@RequestBody Map<String , String > request) {
+
+        return userService.getSuggestedUsers(request.get("token"));
+    }
+
+    }

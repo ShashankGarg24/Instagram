@@ -13,7 +13,7 @@ import java.util.UUID;
 @Service
 public interface PostServiceImpl {
 
-    ResponseEntity uploadPost(String token, List<MultipartFile> media, String location, String caption, boolean commentActivity) throws Exception;
+    ResponseEntity uploadPost(String token, List<MultipartFile> media, String location, String caption) throws Exception;
 
     ResponseEntity<?> updatePost(String token, String postId, String caption);
 
@@ -50,4 +50,10 @@ public interface PostServiceImpl {
     ResponseEntity<?> deleteReply(String commentId, String replyId, String token);
 
     ResponseEntity<?> likeDislikeReply(String replyId, String token);
+
+    ResponseEntity<?> uploadStory(String token, List<MultipartFile> media);
+
+    ResponseEntity<?> getPostsFromFollowing(String token);
+
+    ResponseEntity<?> getAllPostsByLikes();
 }

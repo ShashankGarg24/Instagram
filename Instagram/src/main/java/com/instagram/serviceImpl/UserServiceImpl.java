@@ -43,4 +43,8 @@ public interface UserServiceImpl {
     ResponseEntity<?> follow(String token, String userId);
 
     ResponseEntity<?> unfollow(String token, String userId);
+
+    ResponseEntity<?> searchUser(String keyword);
+
+    ResponseEntity<?> getSuggestedUsers(String token);
 }

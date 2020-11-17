@@ -1,6 +1,7 @@
 package com.instagram.services;
 
 import com.instagram.Configuration.JwtUtil;
+import com.instagram.DTO.UserShortDetailsDTO;
 import com.instagram.controllers.Login;
 import com.instagram.models.*;
 import com.instagram.repository.MediaRepo;
@@ -10,10 +11,13 @@ import com.instagram.repository.UserRepository;
 import com.instagram.serviceImpl.UserServiceImpl;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import org.hibernate.jdbc.Expectation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -196,6 +200,9 @@ public class UserService implements UserServiceImpl {
 
     public ResponseEntity<?> setNewPassword(String userEmail, String password) {
         UserCredentials user = findUserByEmail(userEmail);
+        if(!user.isVerified()){
+            return new ResponseEntity<>("Profile not verified", HttpStatus.valueOf(300));
+        }
         if (user == null) {
             return new ResponseEntity<>("No such Account found!", HttpStatus.valueOf(404));
         }
@@ -206,6 +213,7 @@ public class UserService implements UserServiceImpl {
         if (profileRepository.findAllByUserUserId(user.getUserId()) == null) {
             return new ResponseEntity<>("Password changed. no profile is available", HttpStatus.valueOf(300));
         }
+
         return new ResponseEntity<>(profileRepository.findAllByUserUserId(user.getUserId()), HttpStatus.ACCEPTED);
     }
 
@@ -274,5 +282,59 @@ public class UserService implements UserServiceImpl {
         return false;
     }
 
+    public ResponseEntity<?> searchUser(String keyword){
+        try{
+            List<UserShortDetailsDTO> response = new ArrayList<>();
+            List<UserProfile> searchedProfilesByKeyword = profileRepository.findAll(keyword);
+            if (searchedProfilesByKeyword.isEmpty()) {
+                return new ResponseEntity<>("no user found!", HttpStatus.EXPECTATION_FAILED);
+            }
+            for (UserProfile profile : searchedProfilesByKeyword) {
+                response.add(getUserShortDetails(profile));
+            }
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public UserShortDetailsDTO getUserShortDetails(UserProfile userProfile){
+        return new UserShortDetailsDTO(userProfile.getProfileId(), userProfile.getProfilePicPath(), userProfile.getUsername(), userProfile.getFullName());
+    }
+
+    public ResponseEntity<?> getSuggestedUsers(String token){
+        try {
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            List<UserShortDetailsDTO> response = new ArrayList<>();
+            int count = 0;
+
+            if(profile.getFollowingNumber() == 0){
+                for(UserProfile profile1 : profileRepository.findByOrderByFollowingNumberDesc()){
+                    response.add(getUserShortDetails(profile1));
+                    if(count == 10){
+                        break;
+                    }
+                    count++;
+                }
+            }
+            else{
+                for (UserProfile profile1 : profile.getFollowing()) {
+                    response.add(getUserShortDetails(profile1));
+                    if(count == 10){
+                        break;
+                    }
+                    count++;
+                }
+
+            }
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
 
 }

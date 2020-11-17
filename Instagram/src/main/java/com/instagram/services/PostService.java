@@ -10,6 +10,8 @@ import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +57,9 @@ public class PostService implements PostServiceImpl {
     ReplyRepo replyRepo;
 
     @Autowired
+    StoryRepo storyRepo;
+
+    @Autowired
     USerLIkes userLikes;
 
     @Autowired
@@ -62,11 +67,11 @@ public class PostService implements PostServiceImpl {
 
 
     @Transactional
-    public ResponseEntity<?> uploadPost(String token, List<MultipartFile> media, String location, String caption, boolean commentActivity) throws Exception {
+    public ResponseEntity<?> uploadPost(String token, List<MultipartFile> media, String location, String caption) throws Exception {
 
         try{
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
-            Posts post = new Posts(location, caption, commentActivity, false);
+            Posts post = new Posts(location, caption, true, false);
             post.setProfile(profile);
             postRepository.save(post);
 
@@ -167,7 +172,7 @@ public class PostService implements PostServiceImpl {
             postRepository.save(postToBePinned);
             return new ResponseEntity<>("Post pinned!", HttpStatus.ACCEPTED);
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
         }
     }
 
@@ -339,7 +344,7 @@ public class PostService implements PostServiceImpl {
             return new ResponseEntity<>("comment uploaded.", HttpStatus.ACCEPTED);
         }
         catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
         }
     }
 
@@ -497,4 +502,79 @@ public class PostService implements PostServiceImpl {
 
     }
 
+    @Transactional
+    public ResponseEntity<?> uploadStory(String token, List<MultipartFile> media){
+
+        try{
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            Story story = new Story(profile);
+
+            for (MultipartFile file : media) {
+                String path = fileUploadService.fileUpload(file, story.getStoryId().toString(), "instaStories");
+                story.setStoryMediaPath(path);
+            }
+
+            storyRepo.save(story);
+           // profile.increaseStoryNumber();
+
+            return new ResponseEntity<>("Story Uploaded!", HttpStatus.ACCEPTED);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<?> deleteStory(String token, String storyId) {
+        try {
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            storyRepo.deleteById(UUID.fromString(storyId));
+         //   profile.decreaseStoryNumber();
+
+            return new ResponseEntity<>("Story Deleted!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    @Async
+    @Scheduled(fixedRate = 1000)
+    public void automaticStoryDeletion(){
+
+    }
+
+    public ResponseEntity<?> getPostsFromFollowing(String token){
+        try{
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            List<Posts> posts = new ArrayList<>();
+            List<UserProfile> followings = profile.getFollowing();
+            for (UserProfile profile1 : followings) {
+                if (profile1.getPostNumber() != 0) {
+                    List<Posts> userPosts = postRepository.findAllByProfileProfileId(profile1.getProfileId());
+                    for (Posts post : userPosts) {
+                        posts.add(post);
+                    }
+                }
+            }
+
+            Comparator<Posts> compareByDateOfCreation = Comparator.comparing(Posts::getpostCreationTimeStamp);
+            Collections.sort(posts, compareByDateOfCreation);
+            return new ResponseEntity<>(posts, HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    public ResponseEntity<?> getAllPostsByLikes(){
+       try{
+            List<Posts> allPublicPosts = postRepository.findAllByProfileUserPrivacy("PUBLIC");
+            Comparator<Posts> compareByLikes = Comparator.comparing(Posts::getLikes);
+            Collections.sort(allPublicPosts, compareByLikes.reversed());
+            return new ResponseEntity<>(allPublicPosts, HttpStatus.OK);
+        }
+        catch (Exception e){
+           return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
 }

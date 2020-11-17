@@ -24,6 +24,7 @@ public class UserProfile {
     private String profilePicPath;
     private String birthDate;
     private int postNumber = 0;
+   // private int storyNumber = 0;
     private int categoryNumber = 0;
     private int followersNumber = 0;
     private int followingNumber = 0;
@@ -127,6 +128,18 @@ public class UserProfile {
         --this.followingNumber;
     }
 
+    /*public int getStoryNumber() {
+        return storyNumber;
+    }
+
+    public void increaseStoryNumber() {
+        ++this.storyNumber;
+    }
+
+    public void decreaseStoryNumber() {
+        --this.storyNumber;
+    }
+*/
     public String getUsername() {
         return username;
     }
