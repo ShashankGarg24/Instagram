@@ -56,4 +56,6 @@ public interface PostServiceImpl {
     ResponseEntity<?> getPostsFromFollowing(String token);
 
     ResponseEntity<?> getAllPostsByLikes();
+
+    ResponseEntity<?> changeCommentActivity(String token, String postId);
 }

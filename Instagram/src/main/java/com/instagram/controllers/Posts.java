@@ -30,16 +30,14 @@ public class Posts {
         return postService.uploadPost(token, media, location, caption);
     }
 
-
-
     @RequestMapping(method = RequestMethod.PATCH, path = "/updatePost")
     public ResponseEntity<?> updatePost(@RequestBody Map<String, String > request){
         return postService.updatePost(request.get("token"), request.get("postId"), request.get("caption"));
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/viewPost")
-    public ResponseEntity<?> viewPost(@RequestBody Map<String, String > request){
-        return postService.viewPost(request.get("postId"));
+    @RequestMapping(method = RequestMethod.GET, path = "/viewPost/{postId}")
+    public ResponseEntity<?> viewPost(@PathVariable("postId") String postId){
+        return postService.viewPost(postId);
     }
 
     @RequestMapping(method = RequestMethod.PATCH, path = "/pinPost")
@@ -53,6 +51,11 @@ public class Posts {
 
     }
 
+    @RequestMapping(method = RequestMethod.PATCH, path = "/changeCommentActivity")
+    public ResponseEntity<?> changeCommentActivity(@RequestBody Map<String, String > request) {
+        return postService.changeCommentActivity(request.get("token"), request.get("postId"));
+
+    }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/deletePost")
     public ResponseEntity<?> deletePost(@RequestBody Map<String, String> request){
@@ -133,10 +136,10 @@ public class Posts {
         return postService.uploadStory(token, media);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/getRecentPosts")
-    public ResponseEntity<?> getPostsFromFollowing(@RequestBody Map<String, String> request){
+    @RequestMapping(method = RequestMethod.GET, path = "/getPostsFromFollowing/{token}")
+    public ResponseEntity<?> getPostsFromFollowing(@PathVariable String token){
 
-        return postService.getPostsFromFollowing(request.get("token"));
+        return postService.getPostsFromFollowing(token);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/getAllPostsByLikes")

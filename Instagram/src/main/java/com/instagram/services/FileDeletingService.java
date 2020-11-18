@@ -15,7 +15,7 @@ public class FileDeletingService {
 
     public ResponseEntity<?> deleteFile(String fileName, String folderName) {
         try{
-            Files.deleteIfExists(Paths.get("C:\\Users\\sg241\\IdeaProjects\\" + folderName + "\\" + fileName));
+            Files.deleteIfExists(Paths.get("C:\\Users\\sg241\\IdeaProjects\\" + folderName + "\\" + fileName + ".jpg"));
             return new ResponseEntity<>("File successfully deleted", HttpStatus.OK);
         }
         catch (NoSuchFileException e){

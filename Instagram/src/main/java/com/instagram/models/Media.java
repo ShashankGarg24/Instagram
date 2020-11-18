@@ -12,12 +12,12 @@ public class Media {
 
     @Id
     @Column(nullable = false, unique = true)
+    @JsonIgnore
     private UUID mediaId;
     @ElementCollection
     private List<String> mediaPath = new ArrayList<>();
     private boolean pinned;
     private UUID postId;
-
 
 
     public Media() {

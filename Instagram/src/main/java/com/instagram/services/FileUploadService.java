@@ -10,7 +10,7 @@ import java.io.File;
 public class FileUploadService {
 
     public String fileUpload(MultipartFile file, String fileName, String folderName)throws Exception{
-        String path = "C:\\Users\\sg241\\IdeaProjects\\" + folderName + "\\" + fileName;
+        String path = "C:\\Users\\sg241\\IdeaProjects\\" + folderName + "\\" + fileName + ".jpg";
         file.transferTo(new File(path));
         return path;
     }

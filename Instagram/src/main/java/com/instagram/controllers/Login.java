@@ -61,6 +61,9 @@ public class Login {
             UserCredentials user;
             if (request.getUsername().contains("@")) {
                 user = userService.findUserByEmail(request.getUsername());//username = username or email
+                if(user == null){
+                    return new ResponseEntity<>("email doesn't exist", HttpStatus.valueOf(404));
+                }
                 checkAccountAndPassword(user, request);
 
                 System.out.println(user.isVerified());
@@ -80,11 +83,11 @@ public class Login {
                 return new ResponseEntity<>(profiles, HttpStatus.OK);
 
             } else {
-                System.out.println(1);
                 UserProfile profile = profileRepository.findByUsername(request.getUsername());
-                System.out.println(2);
+                if(profile == null){
+                    return new ResponseEntity<>("username not available", HttpStatus.valueOf(404));
+                }
                 user = profile.getUser();
-                System.out.println(3);
                 checkAccountAndPassword(user, request);
                 map.put(user.getUserEmail(), request.getPassword());
                 return createLoginToken(profileRepository.findByUsername(request.getUsername()),request.getPassword());

@@ -1,6 +1,7 @@
 package com.instagram.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.PersistentObjectException;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class UserProfile {
     private String userPrivacy;
     private boolean enabled;
     @CreationTimestamp
+    @JsonIgnore
     private LocalDateTime profileCreationTimeStamp;
     private String profilePicPath;
     private String birthDate;
@@ -39,7 +41,11 @@ public class UserProfile {
     private List<CustomCategory> categories = new ArrayList<CustomCategory>();
 
     @OneToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Media> postMedia = new ArrayList<Media>();
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Posts> posts = new ArrayList<Posts>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -246,6 +252,18 @@ public class UserProfile {
         this.postMedia.remove(postMedia);
     }
 
+    public List<Posts> getPosts() {
+        return posts;
+    }
+
+    public void addToPosts(Posts post) {
+        this.posts.add(post);
+    }
+
+    public void removeFromPosts(Posts post) {
+        this.posts.remove(post);
+    }
+
     public List<UserProfile> getFollowers() {
         return followers;
     }
@@ -268,5 +286,22 @@ public class UserProfile {
 
     public void removeFollowing(UserProfile following) {
         this.following.remove(following);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof UserProfile)) {
+            return false;
+        }
+        UserProfile other = (UserProfile) obj;
+        return this.profileId.equals(other.profileId);
+    }
+
+    @Override
+    public int hashCode() {
+        return profileId.hashCode();
     }
 }

@@ -2,6 +2,7 @@ package com.instagram.models;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.instagram.DTO.UserShortDetailsDTO;
 import org.hibernate.annotations.*;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.Resource;
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -22,13 +24,19 @@ public class Posts {
   private UUID postId;
   private Integer likes = 0;
   @CreationTimestamp
+  @JsonIgnore
   private LocalDateTime postCreationTimeStamp;
   @UpdateTimestamp
+  @JsonIgnore
   private LocalDateTime postLastUpdateTimeStamp;
   private String location;
   private String caption;
   private boolean commentActivity;
   private boolean pinned;
+  private String profilePicPathOfUploader;
+  private String fullNameOfUploader;
+  private String usernameOfUploader;
+
 
   @OneToMany(orphanRemoval = true)
   @JsonIgnore
@@ -55,7 +63,7 @@ public class Posts {
   }
 
 
-  public Posts( String location, String caption, boolean commentActivity, boolean pinned) {
+  public Posts( String location, String caption, boolean commentActivity, boolean pinned, String profilePicPathOfUploader, String fullNameOfUploader, String usernameOfUploader) {
     this.postId = UUID.randomUUID();
     this.postCreationTimeStamp = LocalDateTime.now();
     this.postLastUpdateTimeStamp = LocalDateTime.now();
@@ -63,6 +71,9 @@ public class Posts {
     this.caption = caption;
     this.commentActivity = commentActivity;
     this.pinned = pinned;
+    this.profilePicPathOfUploader = profilePicPathOfUploader;
+    this.fullNameOfUploader = fullNameOfUploader;
+    this.usernameOfUploader = usernameOfUploader;
   }
 
   public UUID getPostId() {
@@ -128,6 +139,30 @@ public class Posts {
 
   public void setPostLastUpdateTimeStamp(LocalDateTime postLastUpdateTimeStamp) {
     this.postLastUpdateTimeStamp = postLastUpdateTimeStamp;
+  }
+
+  public String getProfilePicPathOfUploader() {
+    return profilePicPathOfUploader;
+  }
+
+  public void setProfilePicPathOfUploader(String profilePicPathOfUploader) {
+    this.profilePicPathOfUploader = profilePicPathOfUploader;
+  }
+
+  public String getFullNameOfUploader() {
+    return fullNameOfUploader;
+  }
+
+  public void setFullNameOfUploader(String fullNameOfUploader) {
+    this.fullNameOfUploader = fullNameOfUploader;
+  }
+
+  public String getUsernameOfUploader() {
+    return usernameOfUploader;
+  }
+
+  public void setUsernameOfUploader(String usernameOfUploader) {
+    this.usernameOfUploader = usernameOfUploader;
   }
 
   public UserProfile getProfile() {

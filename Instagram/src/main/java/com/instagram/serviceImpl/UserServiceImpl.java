@@ -1,5 +1,6 @@
 package com.instagram.serviceImpl;
 
+import com.instagram.DTO.UserShortDetailsDTO;
 import com.instagram.models.ResetDetails;
 import com.instagram.models.User;
 import com.instagram.models.UserCredentials;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -46,5 +48,17 @@ public interface UserServiceImpl {
 
     ResponseEntity<?> searchUser(String keyword);
 
-    ResponseEntity<?> getSuggestedUsers(String token);
+    List<UserShortDetailsDTO> getSuggestedUsers(String token);
+
+    ResponseEntity<?> getFollowers(String token);
+
+    ResponseEntity<?> getFollowing(String token);
+
+    ResponseEntity<?> getProfileFromToken(String token);
+
+    ResponseEntity<?> viewProfile(String token, String profileId);
+
+    ResponseEntity<?> acceptRequest(String token, String userId);
+
+    ResponseEntity<?> declineRequest(String substring, String userId);
 }

@@ -48,6 +48,9 @@ public class PostService implements PostServiceImpl {
     FileDeletingService fileDeletingService;
 
     @Autowired
+    UserService userService;
+
+    @Autowired
     MediaRepo mediaRepo;
 
     @Autowired
@@ -71,7 +74,7 @@ public class PostService implements PostServiceImpl {
 
         try{
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
-            Posts post = new Posts(location, caption, true, false);
+            Posts post = new Posts(location, caption, true, false, profile.getProfilePicPath(), profile.getFullName(), profile.getUsername());
             post.setProfile(profile);
             postRepository.save(post);
 
@@ -87,6 +90,7 @@ public class PostService implements PostServiceImpl {
             post.setPostMedia(postMedia);
             postRepository.save(post);
             profile.addPostMedia(postMedia);
+            profile.addToPosts(post);
             profileRepository.save(profile);
             profile.increasePostNumber();
             return new ResponseEntity<>("Post Uploaded! " + post.getPostId(), HttpStatus.ACCEPTED);
@@ -146,6 +150,22 @@ public class PostService implements PostServiceImpl {
     }
 
     @Transactional
+    public ResponseEntity<?> changeCommentActivity(String token, String postId) {
+        try {
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            UUID postUUID = UUID.fromString(postId);
+            Posts post = postRepository.findByPostId(postUUID);
+            post.setPinned(false);
+            postRepository.save(post);
+
+            return new ResponseEntity<>("CommentActivity Changed!", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+
+        }
+    }
+
+    @Transactional
     public ResponseEntity<?> pinPost(String token, String postId) {
         try {
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
@@ -185,6 +205,7 @@ public class PostService implements PostServiceImpl {
             UUID postUUID = UUID.fromString(postId);
             Media postMedia = mediaRepo.findByPostId(postUUID);
             profile.removePostMedia(postMedia);
+            profile.removeFromPosts(postRepository.findByPostId(postUUID));
             mediaRepo.deleteById(postMedia.getMediaId());
             profileRepository.save(profile);
             postRepository.deleteById(postUUID);
@@ -548,6 +569,10 @@ public class PostService implements PostServiceImpl {
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
             List<Posts> posts = new ArrayList<>();
             List<UserProfile> followings = profile.getFollowing();
+            if(followings.isEmpty()){
+                return new ResponseEntity<>(userService.getSuggestedUsers(token), HttpStatus.valueOf(202));
+            }
+            System.out.println(11);
             for (UserProfile profile1 : followings) {
                 if (profile1.getPostNumber() != 0) {
                     List<Posts> userPosts = postRepository.findAllByProfileProfileId(profile1.getProfileId());
@@ -557,8 +582,14 @@ public class PostService implements PostServiceImpl {
                 }
             }
 
-            Comparator<Posts> compareByDateOfCreation = Comparator.comparing(Posts::getpostCreationTimeStamp);
-            Collections.sort(posts, compareByDateOfCreation);
+            System.out.println(11);
+            if(posts.isEmpty()){
+                return new ResponseEntity<>(userService.getSuggestedUsers(token), HttpStatus.valueOf(202));
+            }
+            System.out.println(11);
+           //Comparator<PostDTO> compareByDateOfCreation = Comparator.comparing(Posts::getpostCreationTimeStamp);
+           //
+            //Collections.sort(posts, compareByDateOfCreation);
             return new ResponseEntity<>(posts, HttpStatus.OK);
         }
         catch (Exception e){

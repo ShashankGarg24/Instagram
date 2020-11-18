@@ -18,10 +18,13 @@ public class Comment {
   private UUID commentId;
   private String comment;
   private Integer likes = 0;
+  @JsonIgnore
   private Integer replyCount = 0;
   @CreationTimestamp
+  @JsonIgnore
   private LocalDateTime commentCreationTimeStamp;
   @UpdateTimestamp
+  @JsonIgnore
   private LocalDateTime commentLastUpdateTimeStamp;
 
   @OneToMany(orphanRemoval = true)

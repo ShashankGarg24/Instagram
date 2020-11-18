@@ -11,10 +11,10 @@ import java.util.List;
 public class PostDTO {
 
     private Posts post;
-    private Media postMedia;
+    private UserShortDetailsDTO userShortDetailsDTO;
 
-    public PostDTO(Posts post, Media postMedia) {
+    public PostDTO(Posts post, UserShortDetailsDTO userShortDetailsDTO) {
         this.post = post;
-        this.postMedia = postMedia;
+        this.userShortDetailsDTO = userShortDetailsDTO;
     }
 }

@@ -1,23 +1,18 @@
 package com.instagram.services;
 
 import com.instagram.Configuration.JwtUtil;
+import com.instagram.DTO.ProfileViewDTO;
 import com.instagram.DTO.UserShortDetailsDTO;
 import com.instagram.controllers.Login;
 import com.instagram.models.*;
-import com.instagram.repository.MediaRepo;
-import com.instagram.repository.ProfileRepository;
-import com.instagram.repository.UserCredentialsRepo;
-import com.instagram.repository.UserRepository;
+import com.instagram.repository.*;
 import com.instagram.serviceImpl.UserServiceImpl;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
-import org.hibernate.jdbc.Expectation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +20,10 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.xml.transform.OutputKeys;
 
 @Service
 public class UserService implements UserServiceImpl {
@@ -47,6 +44,9 @@ public class UserService implements UserServiceImpl {
 
     @Autowired
     FileUploadService fileUploadService;
+
+    @Autowired
+    FollowRequestRepo followRequestRepo;
 
     @Autowired
     FileDeletingService fileDeletingService;
@@ -210,7 +210,7 @@ public class UserService implements UserServiceImpl {
         userCredentialsRepo.save(user);
         Login login = new Login();
         login.newPassword(userEmail, password);
-        if (profileRepository.findAllByUserUserId(user.getUserId()) == null) {
+        if (profileRepository.findAllByUserUserId(user.getUserId()).isEmpty()) {
             return new ResponseEntity<>("Password changed. no profile is available", HttpStatus.valueOf(300));
         }
 
@@ -234,6 +234,15 @@ public class UserService implements UserServiceImpl {
             if(findFollowing(profile, profileToBeFollowed)){
                 return new ResponseEntity<>("already following that user", HttpStatus.valueOf(310));
             }
+            System.out.println(profileToBeFollowed.getUserPrivacy());
+            System.out.println(profileToBeFollowed.getUserPrivacy().equals("PRIVATE"));
+            if(profileToBeFollowed.getUserPrivacy().equals("PRIVATE")){
+
+                FollowRequest followRequest = new FollowRequest(profileToBeFollowed.getProfileId(), profile.getProfileId());
+                followRequestRepo.save(followRequest);
+
+                return new ResponseEntity<>("follow request sent", HttpStatus.ACCEPTED);
+            }
             profile.addFollowing(profileToBeFollowed);
             profile.addToFollowingNumber();
             profileToBeFollowed.addFollowers(profile);
@@ -242,6 +251,59 @@ public class UserService implements UserServiceImpl {
             profileRepository.save(profileToBeFollowed);
 
             return new ResponseEntity<>("user followed.", HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    private ResponseEntity<?> requestingPrivateAccount(UserProfile profile, UserProfile profileToBeFollowed){
+
+        try{
+            System.out.println(1);
+            FollowRequest followRequest = new FollowRequest(profileToBeFollowed.getProfileId(), profile.getProfileId());
+            followRequestRepo.save(followRequest);
+
+            return new ResponseEntity<>("follow request sent", HttpStatus.ACCEPTED);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    public ResponseEntity<?> acceptRequest(String token, String userId){
+
+        try{
+            UserProfile userProfile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            UserProfile profileOfSender = profileRepository.findByProfileId(UUID.fromString(userId));
+
+            FollowRequest followRequest = followRequestRepo.findByRequestToAndRequestFrom(userProfile.getProfileId(), profileOfSender.getProfileId());
+            followRequestRepo.delete(followRequest);
+
+            profileOfSender.addFollowing(userProfile);
+            profileOfSender.addToFollowingNumber();
+            userProfile.addFollowers(profileOfSender);
+            userProfile.addToFollowersNumber();
+            profileRepository.save(userProfile);
+            profileRepository.save(profileOfSender);
+
+            return new ResponseEntity<>("Request Accepted", HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    public ResponseEntity<?> declineRequest(String token, String userId){
+
+        try{
+            UserProfile userProfile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            UserProfile profileOfSender = profileRepository.findByProfileId(UUID.fromString(userId));
+
+            FollowRequest followRequest = followRequestRepo.findByRequestToAndRequestFrom(userProfile.getProfileId(), profileOfSender.getProfileId());
+            followRequestRepo.delete(followRequest);
+
+            return new ResponseEntity<>("Request Deleted", HttpStatus.OK);
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
@@ -304,30 +366,54 @@ public class UserService implements UserServiceImpl {
         return new UserShortDetailsDTO(userProfile.getProfileId(), userProfile.getProfilePicPath(), userProfile.getUsername(), userProfile.getFullName());
     }
 
-    public ResponseEntity<?> getSuggestedUsers(String token){
-        try {
+    public List<UserShortDetailsDTO> getSuggestedUsers(String token){
+
+        try{
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
             List<UserShortDetailsDTO> response = new ArrayList<>();
             int count = 0;
 
-            if(profile.getFollowingNumber() == 0){
-                for(UserProfile profile1 : profileRepository.findByOrderByFollowingNumberDesc()){
+            for (UserProfile profile1 : profile.getFollowing()) {
+                for(UserProfile profile2 : profile1.getFollowing()){
+                    if (profile.equals(profile2) || profile.equals(profile1) || response.contains(profile2)) {
+                        continue;
+                    }
+                    response.add(getUserShortDetails(profile2));
+                    count++;
+                }
+            }
+
+            if (response.size() < 20) {
+                for (UserProfile profile1 : profileRepository.findByOrderByFollowingNumberDesc()) {
+                    if (response.contains(profile1) || profile.equals(profile1)) {
+                        continue;
+                    }
+                    System.out.println(1);
+                    System.out.println(profile1.getProfileId());
                     response.add(getUserShortDetails(profile1));
-                    if(count == 10){
+                    if (count == 20) {
                         break;
                     }
                     count++;
                 }
             }
-            else{
-                for (UserProfile profile1 : profile.getFollowing()) {
-                    response.add(getUserShortDetails(profile1));
-                    if(count == 10){
-                        break;
-                    }
-                    count++;
-                }
 
+            System.out.println(response);
+
+            return response;
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+return null;
+    }
+
+    public ResponseEntity<?> getFollowers(String token){
+        try{
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            List<UserShortDetailsDTO> response = new ArrayList<>();
+            for(UserProfile profile1 : profile.getFollowers()){
+                response.add(getUserShortDetails(profile1));
             }
 
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -337,4 +423,59 @@ public class UserService implements UserServiceImpl {
         }
     }
 
+    public ResponseEntity<?> getFollowing(String token){
+        try{
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            List<UserShortDetailsDTO> response = new ArrayList<>();
+            for(UserProfile profile1 : profile.getFollowing()){
+                response.add(getUserShortDetails(profile1));
+            }
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    public ResponseEntity<?> getProfileFromToken(String token){
+        try{
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            return new ResponseEntity<>(profile, HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    public ResponseEntity<?> viewProfile(String token, String profileId){
+
+        try{
+            UserProfile userProfile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            UserProfile profileToBeViewed = profileRepository.findByProfileId(UUID.fromString(profileId));
+
+            System.out.println(1);
+
+            FollowRequest followRequest = followRequestRepo.findByRequestToAndRequestFrom(profileToBeViewed.getProfileId(), userProfile.getProfileId());
+            if (followRequest != null) {
+                System.out.println(2);
+                return new ResponseEntity<>(getProfileDTO(profileToBeViewed, "REQUESTED"), HttpStatus.OK);
+            }
+            if (userProfile.getFollowing().contains(profileToBeViewed)) {
+                System.out.println(3);
+                return new ResponseEntity<>(getProfileDTO(profileToBeViewed, "FOLLOWING"), HttpStatus.OK);
+            }
+
+            System.out.println(4);
+            return new ResponseEntity<>(getProfileDTO(profileToBeViewed, "NOT FOLLOWING"), HttpStatus.OK);
+        }
+        catch (Exception e){
+            System.out.println(5);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    private ProfileViewDTO getProfileDTO(UserProfile userProfile, String followStatus){
+        return new ProfileViewDTO(userProfile.getProfileId(), userProfile.getUsername(), userProfile.getFullName(), userProfile.getUserBio(), userProfile.getUserPrivacy(), userProfile.isEnabled(), userProfile.getProfilePicPath(), userProfile.getBirthDate(), userProfile.getPostNumber(), userProfile.getCategoryNumber(), userProfile.getFollowersNumber(), userProfile.getFollowingNumber(), userProfile.getPosts(), followStatus);
+    }
 }
