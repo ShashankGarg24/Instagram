@@ -63,4 +63,6 @@ public interface UserServiceImpl {
     ResponseEntity<?> declineRequest(String substring, String userId);
 
     ResponseEntity<?> getTaggedPosts(String token);
+
+    ResponseEntity removeFromFollowers(String token, String userId);
 }

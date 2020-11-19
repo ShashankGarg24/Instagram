@@ -15,10 +15,10 @@ import java.util.concurrent.TimeUnit;
 public class InstagramApplication implements WebMvcConfigurer {
 
 	/*@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry){
-		registry.addResourceHandler("/resources/**").addResourceLocations("classpath:/static/").setCacheControl(CacheControl.maxAge(2, TimeUnit.HOURS).cachePublic());
-	}*/
-
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/images/**").addResourceLocations("classpath:/images/").setCacheControl(CacheControl.maxAge(2, TimeUnit.HOURS).cachePublic());
+	}
+	*/
 	public static void main(String[] args) {
 		SpringApplication.run(InstagramApplication.class, args);
 	}

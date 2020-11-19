@@ -84,9 +84,9 @@ public class Posts {
         return postService.deleteCategory(request.get("categoryId"), request.get("token"));
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/likeDislikePost")//ACCEPT BOOLEN VALUE
+    @RequestMapping(method = RequestMethod.POST, path = "/likeDislikePost")
     public ResponseEntity<?> likeDislikePost(@RequestBody Map<String, String> request){
-        return postService.likeDislikePost(request.get("postId"), request.get("token"));
+        return postService.likeDislikePost(request.get("postId"), request.get("token"), Boolean.parseBoolean(request.get("likeStatus")));
 
     }
 
@@ -107,7 +107,7 @@ public class Posts {
 
     @RequestMapping(method = RequestMethod.PATCH, path = "/likeDislikeComment")
     public ResponseEntity<?> likeDislikeComment(@RequestBody Map<String, String> request){
-        return postService.likeDislikeComment(request.get("commentId"), request.get("token"));
+        return postService.likeDislikeComment(request.get("commentId"), request.get("token"), Boolean.parseBoolean(request.get("likeStatus")));
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/addReply")
@@ -127,7 +127,7 @@ public class Posts {
 
     @RequestMapping(method = RequestMethod.PATCH, path = "/likeDislikeReply")
     public ResponseEntity<?> likeDislikeReply(@RequestBody Map<String, String> request){
-        return postService.likeDislikeReply(request.get("replyId"), request.get("token"));
+        return postService.likeDislikeReply(request.get("replyId"), request.get("token"), Boolean.parseBoolean(request.get("likeStatus")));
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/uploadStory")

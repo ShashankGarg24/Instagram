@@ -90,6 +90,12 @@ public class UserController {
             return userService.follow(request.get("token"), request.get("userId"));
     }
 
+    @RequestMapping(method = RequestMethod.PATCH, path = "/removeFollower")
+    public ResponseEntity<?> removeFromFollowers(@RequestBody Map<String , String > request){
+
+        return userService.removeFromFollowers(request.get("token"), request.get("userId"));
+    }
+
     @RequestMapping(method = RequestMethod.PATCH, path = "/unfollow")
     public ResponseEntity<?> unfollow(@RequestBody Map<String , String > request){
 

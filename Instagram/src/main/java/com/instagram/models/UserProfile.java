@@ -55,7 +55,7 @@ public class UserProfile {
     @JsonIgnore
     private List<UserProfile> following = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "taggedUsers")
     @JsonIgnore
     private List<Posts> taggedPosts = new ArrayList<>();
 
@@ -304,20 +304,5 @@ public class UserProfile {
         this.taggedPosts.remove(taggedPosts);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof UserProfile)) {
-            return false;
-        }
-        UserProfile other = (UserProfile) obj;
-        return this.profileId.equals(other.profileId);
-    }
 
-    @Override
-    public int hashCode() {
-        return profileId.hashCode();
-    }
 }

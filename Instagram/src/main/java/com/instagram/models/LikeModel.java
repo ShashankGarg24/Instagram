@@ -16,14 +16,16 @@ public class LikeModel {
     private UUID id;
     private UUID profileId;
     private UUID contentId;
+    private boolean likeStatus;
 
     public LikeModel() {
     }
 
-    public LikeModel(UUID profileId, UUID contentId) {
+    public LikeModel(UUID profileId, UUID contentId, boolean likeStatus) {
         this.id = UUID.randomUUID();
         this.profileId = profileId;
         this.contentId = contentId;
+        this.likeStatus = likeStatus;
     }
 
     public UUID getId() {
@@ -48,5 +50,13 @@ public class LikeModel {
 
     public void setContentId(UUID contentId) {
         this.contentId = contentId;
+    }
+
+    public boolean isLikeStatus() {
+        return likeStatus;
+    }
+
+    public void setLikeStatus(boolean likeStatus) {
+        this.likeStatus = likeStatus;
     }
 }

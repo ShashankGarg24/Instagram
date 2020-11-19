@@ -204,7 +204,18 @@ public class PostService implements PostServiceImpl {
             profile.removeFromPosts(postRepository.findByPostId(postUUID));
             mediaRepo.deleteById(postMedia.getMediaId());
             profileRepository.save(profile);
-            postRepository.deleteById(postUUID);
+            for(LikeModel likeModel : userLikes.findAllByContentId(postUUID)){
+                userLikes.delete(likeModel);
+            }
+
+            Posts post = postRepository.findByPostId(postUUID);
+
+            for(UserProfile userProfile : post.getTaggedUsers()){
+                userProfile.removeFromTaggedPosts(post);
+                profileRepository.save(userProfile);
+                post.removeFromTaggedUsers(userProfile);
+            }
+            postRepository.delete(post);
             profile.decreasePostNumber();
             return new ResponseEntity<>("Post Deleted!", HttpStatus.OK);
         } catch (Exception e) {
@@ -320,13 +331,13 @@ public class PostService implements PostServiceImpl {
     }
 
     @Transactional
-    public ResponseEntity<?> likeDislikePost(String postId, String token){
+    public ResponseEntity<?> likeDislikePost(String postId, String token, boolean likeStatus){
         try {
             Posts post = postRepository.findByPostId(UUID.fromString(postId));
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
             LikeModel userLike = userLikes.findByProfileIdAndAndContentId(profile.getProfileId(), post.getPostId());
             if (userLike == null) {
-                LikeModel like = new LikeModel(profile.getProfileId(), post.getPostId());
+                LikeModel like = new LikeModel(profile.getProfileId(), post.getPostId(), true);
                 post.addUserLikes(like);
                 post.increaseLikes();
                 userLikes.save(like);
@@ -335,12 +346,23 @@ public class PostService implements PostServiceImpl {
                 return new ResponseEntity<>("Post liked.", HttpStatus.ACCEPTED);
             }
 
-            post.removeUserLikes(userLike);
+            if(likeStatus == userLike.isLikeStatus()){
+                return new ResponseEntity<>("post already liked/disliked", HttpStatus.valueOf(204));
+            }
+
+            userLike.setLikeStatus(likeStatus);
+            userLikes.save(userLike);
+
+
+            if(likeStatus){
+                post.increaseLikes();
+                postRepository.save(post);
+                return new ResponseEntity<>("Post liked", HttpStatus.valueOf(205));
+            }
             post.decreaseLikes();
             postRepository.save(post);
-            userLikes.deleteById(userLike.getId());
+            return new ResponseEntity<>("Post disliked", HttpStatus.valueOf(205));
 
-            return new ResponseEntity<>("Post disliked.", HttpStatus.valueOf(205));
         }
         catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -383,6 +405,8 @@ public class PostService implements PostServiceImpl {
         try {
             Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            System.out.println(profile.getUsername());
+            System.out.println(comment.getParentUser().getUsername());
 
             if(!comment.getParentUser().equals(profile)){
                 return new ResponseEntity<>("Only user who created the comment can delete it!", HttpStatus.EXPECTATION_FAILED);
@@ -391,6 +415,10 @@ public class PostService implements PostServiceImpl {
             Posts post = postRepository.findByPostId(UUID.fromString(postId));
             post.removeComment(comment);
             postRepository.save(post);
+
+            for(LikeModel likeModel : userLikes.findAllByContentId(UUID.fromString(commentId))){
+                userLikes.delete(likeModel);
+            }
             commentRepo.delete(comment);
 
             return new ResponseEntity<>("comment successfully deleted.", HttpStatus.OK);
@@ -403,13 +431,14 @@ public class PostService implements PostServiceImpl {
 
 
     @Transactional
-    public ResponseEntity<?> likeDislikeComment(String commentId, String token){
+    public ResponseEntity<?> likeDislikeComment(String commentId, String token, boolean likeStatus){
         try {
             Comment comment = commentRepo.findByCommentId(UUID.fromString(commentId));
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
             LikeModel userLike = userLikes.findByProfileIdAndAndContentId(profile.getProfileId(), comment.getCommentId());
+
             if (userLike == null) {
-                LikeModel like = new LikeModel(profile.getProfileId(), comment.getCommentId());
+                LikeModel like = new LikeModel(profile.getProfileId(), comment.getCommentId(), true);
                 comment.addUserLikes(like);
                 comment.increaseLikes();
                 userLikes.save(like);
@@ -418,11 +447,21 @@ public class PostService implements PostServiceImpl {
                 return new ResponseEntity<>("Comment liked.", HttpStatus.ACCEPTED);
             }
 
-            comment.removeUserLikes(userLike);
+            if(likeStatus == userLike.isLikeStatus()){
+                return new ResponseEntity<>("comment already liked/disliked", HttpStatus.valueOf(204));
+            }
+
+            userLike.setLikeStatus(likeStatus);
+            userLikes.save(userLike);
+
+            if(likeStatus){
+                comment.increaseLikes();
+                commentRepo.save(comment);
+                return new ResponseEntity<>("Comment liked.", HttpStatus.valueOf(202));
+            }
+
             comment.decreaseLikes();
             commentRepo.save(comment);
-            userLikes.deleteById(userLike.getId());
-
             return new ResponseEntity<>("Comment disliked.", HttpStatus.valueOf(202));
         }
         catch (Exception e){
@@ -479,6 +518,9 @@ public class PostService implements PostServiceImpl {
             comment.removeFromReplies(reply);
             comment.decreaseReplyCount();
             commentRepo.save(comment);
+            for(LikeModel likeModel : userLikes.findAllByContentId(UUID.fromString(replyId))){
+                userLikes.delete(likeModel);
+            }
             replyRepo.delete(reply);
 
             return new ResponseEntity<>("reply successfully deleted.", HttpStatus.OK);
@@ -491,13 +533,13 @@ public class PostService implements PostServiceImpl {
 
 
     @Transactional
-    public ResponseEntity<?> likeDislikeReply(String replyId, String token){
+    public ResponseEntity<?> likeDislikeReply(String replyId, String token, boolean likeStatus){
         try {
             Reply reply = replyRepo.findByReplyId(UUID.fromString(replyId));
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
             LikeModel userLike = userLikes.findByProfileIdAndAndContentId(profile.getProfileId(), reply.getReplyId());
             if (userLike == null) {
-                LikeModel like = new LikeModel(profile.getProfileId(), reply.getReplyId());
+                LikeModel like = new LikeModel(profile.getProfileId(), reply.getReplyId(), true);
                 reply.addUserLikes(like);
                 reply.increaseLikes();
                 userLikes.save(like);
@@ -506,11 +548,22 @@ public class PostService implements PostServiceImpl {
                 return new ResponseEntity<>("Reply liked.", HttpStatus.ACCEPTED);
             }
 
-            reply.removeUserLikes(userLike);
+            if(likeStatus == userLike.isLikeStatus()){
+                return new ResponseEntity<>("reply already liked/disliked", HttpStatus.valueOf(204));
+            }
+
+            userLike.setLikeStatus(likeStatus);
+            userLikes.save(userLike);
+
+            if(likeStatus){
+                reply.increaseLikes();
+                replyRepo.save(reply);
+                return new ResponseEntity<>("Reply liked.", HttpStatus.valueOf(202));
+
+            }
+
             reply.decreaseLikes();
             replyRepo.save(reply);
-            userLikes.deleteById(userLike.getId());
-
             return new ResponseEntity<>("Reply disliked.", HttpStatus.valueOf(202));
         }
         catch (Exception e){

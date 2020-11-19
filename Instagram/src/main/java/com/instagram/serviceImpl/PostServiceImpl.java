@@ -33,7 +33,7 @@ public interface PostServiceImpl {
 
     ResponseEntity<?> deleteCategory(String categoryId, String token);
 
-    ResponseEntity<?> likeDislikePost(String postId, String token);
+    ResponseEntity<?> likeDislikePost(String postId, String token, boolean likeStatus);
 
     ResponseEntity<?> addComment(String postId, String token, String comment);
 
@@ -41,7 +41,7 @@ public interface PostServiceImpl {
 
     ResponseEntity<?> deleteComment(String postId, String commentId, String token);
 
-    ResponseEntity<?> likeDislikeComment(String commentId, String token);
+    ResponseEntity<?> likeDislikeComment(String commentId, String token, boolean likeStatus);
 
     ResponseEntity<?> addReply(String commentId, String token, String reply);
 
@@ -49,7 +49,7 @@ public interface PostServiceImpl {
 
     ResponseEntity<?> deleteReply(String commentId, String replyId, String token);
 
-    ResponseEntity<?> likeDislikeReply(String replyId, String token);
+    ResponseEntity<?> likeDislikeReply(String replyId, String token, boolean likeStatus);
 
     ResponseEntity<?> uploadStory(String token, List<MultipartFile> media);
 

@@ -234,8 +234,7 @@ public class UserService implements UserServiceImpl {
             if(findFollowing(profile, profileToBeFollowed)){
                 return new ResponseEntity<>("already following that user", HttpStatus.valueOf(310));
             }
-            System.out.println(profileToBeFollowed.getUserPrivacy());
-            System.out.println(profileToBeFollowed.getUserPrivacy().equals("PRIVATE"));
+
             if(profileToBeFollowed.getUserPrivacy().equals("PRIVATE")){
 
                 FollowRequest followRequest = new FollowRequest(profileToBeFollowed.getProfileId(), profile.getProfileId());
@@ -310,23 +309,41 @@ public class UserService implements UserServiceImpl {
         }
     }
 
+    public ResponseEntity removeFromFollowers(String token, String userId){
+        try{
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            UserProfile profileToBeRemovedFromFollowers = profileRepository.findByProfileId(UUID.fromString(userId));
+            profile.removeFollowers(profileToBeRemovedFromFollowers);
+            profile.deductFollowersNumber();
+            profileToBeRemovedFromFollowers.removeFollowing(profile);
+            profileToBeRemovedFromFollowers.deductFollowingNumber();
+            profileRepository.save(profile);
+            profileRepository.save(profileToBeRemovedFromFollowers);
+
+            return new ResponseEntity("user removed from followers", HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
     public ResponseEntity<?> unfollow(String token, String userId){
         try{
 
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
-            UserProfile profileToBeFollowed = profileRepository.findByProfileId(UUID.fromString(userId));
-            if(profile.getProfileId().equals(profileToBeFollowed.getProfileId())){
+            UserProfile profileToBeUnFollowed = profileRepository.findByProfileId(UUID.fromString(userId));
+            if(profile.getProfileId().equals(profileToBeUnFollowed.getProfileId())){
                 return new ResponseEntity<>("can't unfollow itself", HttpStatus.valueOf(305));
             }
-            if(!findFollowing(profile, profileToBeFollowed)){
+            if(!findFollowing(profile, profileToBeUnFollowed)){
                 return new ResponseEntity<>("not following that user", HttpStatus.valueOf(310));
             }
-            profile.removeFollowing(profileToBeFollowed);
+            profile.removeFollowing(profileToBeUnFollowed);
             profile.deductFollowingNumber();
-            profileToBeFollowed.removeFollowers(profile);
-            profileToBeFollowed.deductFollowersNumber();
+            profileToBeUnFollowed.removeFollowers(profile);
+            profileToBeUnFollowed.deductFollowersNumber();
             profileRepository.save(profile);
-            profileRepository.save(profileToBeFollowed);
+            profileRepository.save(profileToBeUnFollowed);
 
             return new ResponseEntity<>("user unfollowed.", HttpStatus.OK);
         }
