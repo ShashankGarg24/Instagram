@@ -55,6 +55,10 @@ public class UserProfile {
     @JsonIgnore
     private List<UserProfile> following = new ArrayList<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Posts> taggedPosts = new ArrayList<>();
+
   /*  @OneToMany
     private List<Comment> comments;
 
@@ -286,6 +290,18 @@ public class UserProfile {
 
     public void removeFollowing(UserProfile following) {
         this.following.remove(following);
+    }
+
+    public List<Posts> getTaggedPosts() {
+        return taggedPosts;
+    }
+
+    public void addToTaggedPosts(Posts taggedPosts) {
+        this.taggedPosts.add(taggedPosts);
+    }
+
+    public void removeFromTaggedPosts(Posts taggedPosts) {
+        this.taggedPosts.remove(taggedPosts);
     }
 
     @Override

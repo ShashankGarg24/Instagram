@@ -43,6 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/setNewPassword").permitAll()
             .antMatchers("/api/validateOTP").permitAll()
             .antMatchers("/api/resendOTP/**").permitAll()
+            .antMatchers("/images/**").permitAll()
         .anyRequest().authenticated()
     //        .anyRequest().permitAll()
         .and()

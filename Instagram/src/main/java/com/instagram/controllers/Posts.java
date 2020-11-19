@@ -25,9 +25,9 @@ public class Posts {
     UserServiceImpl userService;
 
     @RequestMapping(method = RequestMethod.POST, path = "/uploadPost")
-    public ResponseEntity<?> uploadPost(@RequestParam String token , @RequestParam List<MultipartFile> media, @RequestParam String location, @RequestParam String caption) throws Exception {
+    public ResponseEntity<?> uploadPost(@RequestParam String token , @RequestParam List<MultipartFile> media, @RequestParam String location, @RequestParam String caption, @RequestParam List<String> taggedUserIds) throws Exception {
 
-        return postService.uploadPost(token, media, location, caption);
+        return postService.uploadPost(token, media, location, caption, taggedUserIds);
     }
 
     @RequestMapping(method = RequestMethod.PATCH, path = "/updatePost")

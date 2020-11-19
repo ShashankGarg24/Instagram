@@ -145,4 +145,9 @@ public class UserController {
     public ResponseEntity<?> declineRequest(@RequestHeader(name = "Authorization") String token, @RequestBody Map<String, String> request){
         return userService.declineRequest(token.substring(7), request.get("userId"));
     }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/getTaggedPosts")
+    public ResponseEntity<?> getTaggedPosts(@RequestHeader(name = "Authorization") String token){
+        return userService.getTaggedPosts(token.substring(7));
+    }
 }

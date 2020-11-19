@@ -2,30 +2,18 @@ package com.instagram.services;
 
 
 import com.instagram.Configuration.JwtUtil;
-import com.instagram.DTO.PostDTO;
 import com.instagram.models.*;
 import com.instagram.repository.*;
 import com.instagram.serviceImpl.PostServiceImpl;
-import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.Multipart;
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaDelete;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.CriteriaUpdate;
-import javax.persistence.metamodel.Metamodel;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -70,13 +58,20 @@ public class PostService implements PostServiceImpl {
 
 
     @Transactional
-    public ResponseEntity<?> uploadPost(String token, List<MultipartFile> media, String location, String caption) throws Exception {
+    public ResponseEntity<?> uploadPost(String token, List<MultipartFile> media, String location, String caption, List<String> taggedUserIds) throws Exception {
 
         try{
             UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
             Posts post = new Posts(location, caption, true, false, profile.getProfilePicPath(), profile.getFullName(), profile.getUsername());
             post.setProfile(profile);
             postRepository.save(post);
+
+            for(String id : taggedUserIds){
+                UserProfile taggedUserProfile = profileRepository.findByProfileId(UUID.fromString(id));
+                post.addToTaggedUsers(taggedUserProfile);
+                taggedUserProfile.addToTaggedPosts(post);
+                profileRepository.save(taggedUserProfile);
+            }
 
             List<String> allPath = new ArrayList<>();
             Media postMedia = new Media(false, post.getPostId());
@@ -85,14 +80,15 @@ public class PostService implements PostServiceImpl {
                 allPath.add(path);
             }
 
+
             postMedia.setmediaPath(allPath);
             mediaRepo.save(postMedia);
             post.setPostMedia(postMedia);
             postRepository.save(post);
             profile.addPostMedia(postMedia);
             profile.addToPosts(post);
-            profileRepository.save(profile);
             profile.increasePostNumber();
+            profileRepository.save(profile);
             return new ResponseEntity<>("Post Uploaded! " + post.getPostId(), HttpStatus.ACCEPTED);
         }
         catch (Exception e){
@@ -608,4 +604,5 @@ public class PostService implements PostServiceImpl {
            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
         }
     }
+
 }

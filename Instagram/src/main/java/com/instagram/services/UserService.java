@@ -478,4 +478,14 @@ return null;
     private ProfileViewDTO getProfileDTO(UserProfile userProfile, String followStatus){
         return new ProfileViewDTO(userProfile.getProfileId(), userProfile.getUsername(), userProfile.getFullName(), userProfile.getUserBio(), userProfile.getUserPrivacy(), userProfile.isEnabled(), userProfile.getProfilePicPath(), userProfile.getBirthDate(), userProfile.getPostNumber(), userProfile.getCategoryNumber(), userProfile.getFollowersNumber(), userProfile.getFollowingNumber(), userProfile.getPosts(), followStatus);
     }
+
+    public ResponseEntity<?> getTaggedPosts(String token){
+        try{
+            UserProfile profile = profileRepository.findByUsername(jwtUtil.getUsernameFromToken(token));
+            return new ResponseEntity<>(profile.getTaggedPosts(), HttpStatus.OK);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
 }

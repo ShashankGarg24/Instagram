@@ -13,7 +13,7 @@ import java.util.UUID;
 @Service
 public interface PostServiceImpl {
 
-    ResponseEntity uploadPost(String token, List<MultipartFile> media, String location, String caption) throws Exception;
+    ResponseEntity uploadPost(String token, List<MultipartFile> media, String location, String caption, List<String> taggedUserIds) throws Exception;
 
     ResponseEntity<?> updatePost(String token, String postId, String caption);
 

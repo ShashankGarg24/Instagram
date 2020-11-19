@@ -61,4 +61,6 @@ public interface UserServiceImpl {
     ResponseEntity<?> acceptRequest(String token, String userId);
 
     ResponseEntity<?> declineRequest(String substring, String userId);
+
+    ResponseEntity<?> getTaggedPosts(String token);
 }

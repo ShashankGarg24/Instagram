@@ -53,6 +53,9 @@ public class Posts {
   private List<Comment> comments = new ArrayList<>();
 
   //tagged users
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JsonIgnore
+  private List<UserProfile> taggedUsers = new ArrayList<>();
 
  /* @OneToMany
   private List<Comment> comments;
@@ -211,5 +214,17 @@ public class Posts {
 
   public void removeComment(Comment comment) {
     this.comments.remove(comment);
+  }
+
+  public List<UserProfile> getTaggedUsers() {
+    return taggedUsers;
+  }
+
+  public void addToTaggedUsers(UserProfile taggedUsers) {
+    this.taggedUsers.add(taggedUsers);
+  }
+
+  public void removeFromTaggedUsers(UserProfile taggedUsers) {
+    this.taggedUsers.remove(taggedUsers);
   }
 }
